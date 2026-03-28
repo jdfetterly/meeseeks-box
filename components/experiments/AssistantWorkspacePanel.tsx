@@ -6,9 +6,11 @@ import type { ProjectSpecDetail } from '@/lib/specs/service';
 export function AssistantWorkspacePanel({
   detail,
   currentPlan,
+  compact = false,
 }: {
   detail: ProjectDetailRecord;
   currentPlan: ProjectSpecDetail | null;
+  compact?: boolean;
 }) {
   const workspaceReady = detail.summary.workspaceStatus === 'ready';
 
@@ -16,9 +18,13 @@ export function AssistantWorkspacePanel({
     <section style={panelStyle}>
       <div style={{ display: 'grid', gap: '6px' }}>
         <div style={eyebrowStyle}>Assistant workspace</div>
-        <h2 style={panelTitleStyle}>Context-aware control plane</h2>
+        <h2 style={panelTitleStyle}>
+          {compact ? 'Secondary control plane' : 'Context-aware control plane'}
+        </h2>
         <p style={panelBodyStyle}>
-          This panel should stay useful in both variants. It carries project context, suggested next moves, and the fastest path back into conversational setup.
+          {compact
+            ? 'Board OS keeps chat available, but clearly subordinate to the board. Use it to redirect work, not to dominate the page.'
+            : 'This panel should stay useful in both variants. It carries project context, suggested next moves, and the fastest path back into conversational setup.'}
         </p>
       </div>
 
@@ -29,7 +35,7 @@ export function AssistantWorkspacePanel({
 
       <div style={stackStyle}>
         <OpenChatPanelButton
-          label="Plan next move"
+          label={compact ? 'Redirect with chat' : 'Plan next move'}
           intent="project_planning"
           context={{
             entityType: 'project',
@@ -57,22 +63,24 @@ export function AssistantWorkspacePanel({
           }}
           variant="outline"
         />
-        <OpenChatPanelButton
-          label={workspaceReady ? 'Standing delegation' : 'Prepare workspace'}
-          intent={workspaceReady ? 'create_schedule' : 'project_planning'}
-          context={{
-            entityType: 'project',
-            entityId: detail.project.id,
-            projectId: detail.project.id,
-            page: 'lab-project',
-            suggestedPrompt: workspaceReady
-              ? `Create a standing delegated outcome for ${detail.project.title}.`
-              : `This project needs a workspace before code execution. Help me bind or bootstrap it.`,
-            workspaceAction: workspaceReady ? null : 'bind_existing',
-            starterWorkspacePath: detail.workspace?.workspacePath ?? null,
-          }}
-          variant="outline"
-        />
+        {compact ? null : (
+          <OpenChatPanelButton
+            label={workspaceReady ? 'Standing delegation' : 'Prepare workspace'}
+            intent={workspaceReady ? 'create_schedule' : 'project_planning'}
+            context={{
+              entityType: 'project',
+              entityId: detail.project.id,
+              projectId: detail.project.id,
+              page: 'lab-project',
+              suggestedPrompt: workspaceReady
+                ? `Create a standing delegated outcome for ${detail.project.title}.`
+                : `This project needs a workspace before code execution. Help me bind or bootstrap it.`,
+              workspaceAction: workspaceReady ? null : 'bind_existing',
+              starterWorkspacePath: detail.workspace?.workspacePath ?? null,
+            }}
+            variant="outline"
+          />
+        )}
       </div>
 
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
