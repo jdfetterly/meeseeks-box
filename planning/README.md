@@ -1,0 +1,39 @@
+# Planning Root
+
+This directory is the working planning system for Meeseek Box using the `agent-workflow` operating model.
+
+## Purpose
+
+The planning area holds the project manifest, local workflow copy, local templates, initiative folders, and feature-level artifacts.
+
+## Current Use
+
+This repo is currently using the planning tree first for structured test planning and workflow bootstrap.
+
+Primary source inputs for the initial backfill:
+- `/Users/jdfetterly/Documents/projects-folder/meeseeks-box/meeseeks-box-plan-draft-v3.md`
+- `/Users/jdfetterly/Documents/projects-folder/meeseeks-box/legacy/meeseeks-box-plan-draft-v2.md`
+- `/Users/jdfetterly/Documents/projects-folder/meeseeks-box/legacy/plan-v2-change-summary.md`
+- `/Users/jdfetterly/Documents/projects-folder/meeseeks-box/legacy/initialization/docs/`
+
+## Structure
+
+```text
+planning/
+  README.md
+  project.md
+  ai-first-north-star.md
+  ai-first-reality-framework.md
+  _workflow/
+  _templates/
+  initiatives/
+```
+
+## Working Rule
+
+Until formal FDD and TDD artifacts are fully backfilled, the files in this tree should be treated as draft planning artifacts derived from the current Meeseek Box design documents.
+
+## Directional Docs
+
+- `ai-first-north-star.md` defines the product north star and design test.
+- `ai-first-reality-framework.md` translates that north star into product consequences and design guidance.
