@@ -40,17 +40,18 @@ export function MemoryContextRail({
         {playbook?.repoContext ? <span style={chipStyle}>Repo: {playbook.repoContext}</span> : null}
       </div>
 
-      {topItems.length > 0 ? (
-        <ul style={listStyle}>
-          {topItems.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-      ) : null}
-
       <details style={detailsStyle}>
-        <summary style={summaryStyle}>More context</summary>
+        <summary style={summaryStyle}>
+          {topItems.length > 0 ? topItems[0] : 'More context'}
+        </summary>
         <div style={detailsBodyStyle}>
+          {topItems.length > 0 ? (
+            <ul style={listStyle}>
+              {topItems.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          ) : null}
           {memorySections.map((section) => (
             <div key={section.title} style={sectionStyle}>
               <strong>{section.title}</strong>

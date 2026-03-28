@@ -35,8 +35,8 @@ export function BoardExecutionSurface({
           </h2>
           <p style={panelBodyStyle}>
             {view === 'plan'
-              ? `Current plan${currentPlanTitle ? `: ${currentPlanTitle}` : ''}. Use the board as execution state layered onto the plan, not as manual launch admin.`
-              : 'Traditional lanes remain available as a secondary read of the same cards.'}
+              ? currentPlanTitle ?? 'Current plan'
+              : 'Secondary status view'}
           </p>
         </div>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>

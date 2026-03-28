@@ -22,9 +22,7 @@ export function ProjectExecutionHeader({
             <span style={subtleMetaStyle}>Control routes remain unchanged.</span>
           </div>
           <h1 style={titleStyle}>{detail.project.title}</h1>
-          <p style={subtitleStyle}>
-            {detail.project.summary ?? detail.project.currentFocus ?? 'No project summary yet.'}
-          </p>
+          <p style={subtitleStyle}>{detail.project.summary ?? detail.project.currentFocus ?? 'No project summary yet.'}</p>
         </div>
 
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -33,8 +31,6 @@ export function ProjectExecutionHeader({
           <StatPill label="Review" value={String(detail.summary.reviewCount)} />
           <StatPill label="Attention" value={String(detail.summary.openAttentionCount)} />
         </div>
-
-        <p style={variantSummaryStyle}>{variantMeta.summary}</p>
       </div>
 
       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -118,13 +114,6 @@ const pillStyle = {
   border: '1px solid var(--separator)',
   background: 'var(--material-thin)',
   fontSize: '0.86rem',
-};
-
-const variantSummaryStyle = {
-  margin: 0,
-  color: 'var(--text-tertiary)',
-  fontSize: '0.92rem',
-  maxWidth: '74ch',
 };
 
 const linkChipStyle = {

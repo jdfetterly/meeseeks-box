@@ -81,6 +81,18 @@ export function ProjectShellVariantPage({
   const memory = <MemoryContextRail detail={detail} compact={variant === 'board_os'} />;
   const review = <ReviewPreviewPanel reviewEntries={model.reviewEntries} projectId={detail.project.id} />;
   const activeWork = <ActiveWorkPane activeWork={model.activeWork} />;
+  const memoryDisclosure = (
+    <details style={panelDisclosureStyle}>
+      <summary style={summaryStyle}>Memory</summary>
+      <div style={detailsBodyStyle}>{memory}</div>
+    </details>
+  );
+  const reviewDisclosure = (
+    <details style={panelDisclosureStyle}>
+      <summary style={summaryStyle}>Review</summary>
+      <div style={detailsBodyStyle}>{review}</div>
+    </details>
+  );
 
   if (variant === 'board_os') {
     return (
@@ -112,8 +124,8 @@ export function ProjectShellVariantPage({
             <div style={{ display: 'grid', gap: '16px' }}>
               {model.view === 'plan' ? planPanel : null}
               {assistant}
-              {memory}
-              {review}
+              {memoryDisclosure}
+              {reviewDisclosure}
             </div>
           </div>
         </div>
@@ -132,9 +144,8 @@ export function ProjectShellVariantPage({
   const sideColumn = (
     <div style={{ display: 'grid', gap: '16px' }}>
       {assistant}
-      {variant === 'board_os' && model.view === 'plan' ? planPanel : null}
-      {memory}
-      {review}
+      {memoryDisclosure}
+      {reviewDisclosure}
     </div>
   );
 
@@ -251,4 +262,11 @@ const summaryStyle = {
 
 const detailsBodyStyle = {
   marginTop: '12px',
+};
+
+const panelDisclosureStyle = {
+  borderRadius: '18px',
+  border: '1px solid var(--separator)',
+  background: 'var(--material-ultra-thin)',
+  padding: '12px 14px',
 };
