@@ -13,24 +13,23 @@ export function AssistantWorkspacePanel({
   compact?: boolean;
 }) {
   const workspaceReady = detail.summary.workspaceStatus === 'ready';
+  const nextStepLabel = currentPlan
+    ? workspaceReady
+      ? 'Refine the plan or redirect work.'
+      : 'Finish workspace setup before starting execution.'
+    : 'Use Assistant to draft the first plan.';
 
   return (
     <section style={panelStyle}>
       <div style={{ display: 'grid', gap: '6px' }}>
-        <div style={eyebrowStyle}>Assistant workspace</div>
-        <h2 style={panelTitleStyle}>
-          {compact ? 'Secondary control plane' : 'Context-aware control plane'}
-        </h2>
-      </div>
-
-      <div style={calloutStyle}>
-        <strong>Recommended next move</strong>
-        <p style={bodyTextStyle}>{detail.summary.suggestedPrompt}</p>
+        <div style={eyebrowStyle}>Assistant</div>
+        <h2 style={panelTitleStyle}>{compact ? 'Secondary support' : 'Next move'}</h2>
+        <p style={bodyTextStyle}>{nextStepLabel}</p>
       </div>
 
       <div style={stackStyle}>
         <OpenChatPanelButton
-          label={compact ? 'Redirect with chat' : 'Plan next move'}
+          label={compact ? 'Open assistant' : 'Open assistant'}
           intent="project_planning"
           context={{
             entityType: 'project',
@@ -97,7 +96,7 @@ export function AssistantWorkspacePanel({
 
 const panelStyle = {
   display: 'grid',
-  gap: '14px',
+  gap: '12px',
   padding: '20px',
   borderRadius: '24px',
   border: '1px solid var(--separator)',
@@ -115,15 +114,6 @@ const eyebrowStyle = {
 const panelTitleStyle = {
   margin: 0,
   fontSize: '1.1rem',
-};
-
-const calloutStyle = {
-  display: 'grid',
-  gap: '6px',
-  borderRadius: '18px',
-  border: '1px solid color-mix(in srgb, var(--accent) 24%, transparent)',
-  background: 'color-mix(in srgb, var(--accent) 12%, transparent)',
-  padding: '14px 16px',
 };
 
 const bodyTextStyle = {

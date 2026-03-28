@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { OpenChatPanelButton } from '@/components/chat-panel/OpenChatPanelButton';
 import type { ProjectDetailRecord } from '@/lib/projects/service';
 import type { ShellVariant } from '@/lib/experiments/shell-variants';
 import { describeShellVariant } from '@/lib/experiments/shell-variants';
@@ -17,39 +16,19 @@ export function ProjectExecutionHeader({
     <header style={headerStyle}>
       <div style={{ display: 'grid', gap: '10px' }}>
         <div style={{ display: 'grid', gap: '6px' }}>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={variantTagStyle}>{variantMeta.title}</span>
-            <span style={subtleMetaStyle}>Control routes remain unchanged.</span>
-          </div>
+          <span style={variantTagStyle}>{variantMeta.title}</span>
           <h1 style={titleStyle}>{detail.project.title}</h1>
-          <p style={subtitleStyle}>{detail.project.summary ?? detail.project.currentFocus ?? 'No project summary yet.'}</p>
         </div>
 
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           <StatPill label="Workspace" value={detail.summary.workspaceStatus.replaceAll('_', ' ')} />
           <StatPill label="Cards" value={String(detail.summary.workCount)} />
-          <StatPill label="Review" value={String(detail.summary.reviewCount)} />
-          <StatPill label="Attention" value={String(detail.summary.openAttentionCount)} />
         </div>
       </div>
 
       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
-        <OpenChatPanelButton
-          label="Ask Assistant"
-          intent="project_planning"
-          context={{
-            entityType: 'project',
-            entityId: detail.project.id,
-            projectId: detail.project.id,
-            page: 'lab-project',
-            suggestedPrompt: detail.summary.suggestedPrompt,
-          }}
-        />
         <Link href={`/projects/${detail.project.id}`} style={linkChipStyle}>
           Control project
-        </Link>
-        <Link href={`/work?projectId=${detail.project.id}`} style={linkChipStyle}>
-          Control board
         </Link>
       </div>
     </header>
@@ -78,17 +57,6 @@ const titleStyle = {
   fontSize: 'clamp(2rem, 4vw, 3rem)',
   lineHeight: 0.96,
   letterSpacing: '-0.05em',
-};
-
-const subtitleStyle = {
-  margin: 0,
-  color: 'var(--text-secondary)',
-  maxWidth: '70ch',
-};
-
-const subtleMetaStyle = {
-  color: 'var(--text-tertiary)',
-  fontSize: '0.84rem',
 };
 
 const variantTagStyle = {
