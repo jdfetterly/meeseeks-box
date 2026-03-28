@@ -11,6 +11,7 @@ Before editing anything for the shell exploration, read in this order:
 3. `planning/initiatives/INIT-001-meeseek-box-platform-foundation/features/FEAT-005-intent-outcome-control-plane-and-surface-redesign/requirements/REQ-006-plan-first-project-and-board.md`
 4. `planning/initiatives/INIT-001-meeseek-box-platform-foundation/features/FEAT-005-intent-outcome-control-plane-and-surface-redesign/requirements/REQ-007-review-queue-and-follow-up.md`
 5. `planning/experiments/shell-variant-scenarios.md`
+6. `planning/experiments/shell-variant-agent-prompts.md`
 
 ## What Exists
 
