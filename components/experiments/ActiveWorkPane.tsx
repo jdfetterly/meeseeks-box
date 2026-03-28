@@ -8,23 +8,13 @@ export function ActiveWorkPane({
   activeWork: ActiveWorkPaneModel | null;
 }) {
   if (!activeWork) {
-    return (
-      <section style={panelStyle}>
-        <div style={{ display: 'grid', gap: '6px' }}>
-          <div style={eyebrowStyle}>Active work pane</div>
-          <h2 style={panelTitleStyle}>Select a card to zoom into execution context</h2>
-          <p style={panelBodyStyle}>
-            This keeps the lab routes close to the Cline-like board-to-detail transition without replacing the control work detail route.
-          </p>
-        </div>
-      </section>
-    );
+    return null;
   }
 
   return (
     <section style={panelStyle}>
       <div style={{ display: 'grid', gap: '6px' }}>
-        <div style={eyebrowStyle}>Active work pane</div>
+        <div style={eyebrowStyle}>Active card</div>
         <h2 style={panelTitleStyle}>{activeWork.workItem.title}</h2>
         <p style={metaStyle}>
           {activeWork.workItem.scope} • {activeWork.workItem.status} • {activeWork.workItem.priority ?? 'default'} priority
@@ -33,14 +23,14 @@ export function ActiveWorkPane({
 
       {activeWork.spec ? (
         <div style={sectionStyle}>
-          <strong>Plan context</strong>
+          <strong>From plan</strong>
           <p style={bodyTextStyle}>{activeWork.spec.title}</p>
           <p style={bodyTextStyle}>{activeWork.spec.outcome}</p>
         </div>
       ) : null}
 
       <div style={sectionStyle}>
-        <strong>Execution context</strong>
+        <strong>What this needs</strong>
         <p style={bodyTextStyle}>
           {activeWork.spec?.intent ??
             'Open the control work detail or the linked conversation for the full brief. This lab pane is intentionally lightweight and keeps the zoomed execution state in one place.'}
@@ -49,7 +39,7 @@ export function ActiveWorkPane({
 
       {activeWork.sourceConversationTitle ? (
         <div style={sectionStyle}>
-          <strong>Conversation linkage</strong>
+          <strong>Source conversation</strong>
           <p style={bodyTextStyle}>{activeWork.sourceConversationTitle}</p>
         </div>
       ) : null}

@@ -25,62 +25,58 @@ export function MemoryContextRail({
       items: playbook?.preferredAgents ?? [],
     },
   ].filter((section) => section.items.length > 0);
+  const topItems = memorySections.flatMap((section) => section.items).slice(0, compact ? 2 : 3);
 
   return (
     <section style={panelStyle}>
       <div style={{ display: 'grid', gap: '6px' }}>
         <div style={eyebrowStyle}>Memory context</div>
-        <h2 style={panelTitleStyle}>Persistent context the agent should inherit</h2>
-        <p style={panelBodyStyle}>
-          Keep decisions, constraints, and learned preferences visible here so the lab variants can be judged on memory usefulness instead of raw board tightness.
-        </p>
+        <h2 style={panelTitleStyle}>Persistent context</h2>
       </div>
 
-      {playbook?.workingStyle ? (
-        <div style={sectionStyle}>
-          <strong>Working style</strong>
-          <p style={bodyTextStyle}>{playbook.workingStyle}</p>
-        </div>
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        {playbook?.workingStyle ? <span style={chipStyle}>Style: {playbook.workingStyle}</span> : null}
+        {playbook?.reviewPreferences ? <span style={chipStyle}>Review: {playbook.reviewPreferences}</span> : null}
+        {playbook?.repoContext ? <span style={chipStyle}>Repo: {playbook.repoContext}</span> : null}
+      </div>
+
+      {topItems.length > 0 ? (
+        <ul style={listStyle}>
+          {topItems.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
       ) : null}
 
-      {playbook?.reviewPreferences ? (
-        <div style={sectionStyle}>
-          <strong>Review preferences</strong>
-          <p style={bodyTextStyle}>{playbook.reviewPreferences}</p>
-        </div>
-      ) : null}
+      <details style={detailsStyle}>
+        <summary style={summaryStyle}>More context</summary>
+        <div style={detailsBodyStyle}>
+          {memorySections.map((section) => (
+            <div key={section.title} style={sectionStyle}>
+              <strong>{section.title}</strong>
+              <ul style={listStyle}>
+                {section.items.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
 
-      {playbook?.repoContext ? (
-        <div style={sectionStyle}>
-          <strong>Repo context</strong>
-          <p style={bodyTextStyle}>{playbook.repoContext}</p>
-        </div>
-      ) : null}
-
-      {memorySections.map((section) => (
-        <div key={section.title} style={sectionStyle}>
-          <strong>{section.title}</strong>
-          <ul style={listStyle}>
-            {section.items.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      ))}
-
-      {suggestionItems.length > 0 ? (
-        <div style={sectionStyle}>
-          <strong>Learning suggestions</strong>
-          <div style={{ display: 'grid', gap: '8px' }}>
-            {suggestionItems.map((suggestion) => (
-              <div key={suggestion.id} style={learningCardStyle}>
-                <strong style={{ fontSize: '0.92rem' }}>{suggestion.title}</strong>
-                <p style={bodyTextStyle}>{suggestion.detail}</p>
+          {suggestionItems.length > 0 ? (
+            <div style={sectionStyle}>
+              <strong>Learning suggestions</strong>
+              <div style={{ display: 'grid', gap: '8px' }}>
+                {suggestionItems.map((suggestion) => (
+                  <div key={suggestion.id} style={learningCardStyle}>
+                    <strong style={{ fontSize: '0.92rem' }}>{suggestion.title}</strong>
+                    <p style={bodyTextStyle}>{suggestion.detail}</p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          ) : null}
         </div>
-      ) : null}
+      </details>
 
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
         <OpenChatPanelButton
@@ -125,12 +121,6 @@ const panelTitleStyle = {
   fontSize: '1.1rem',
 };
 
-const panelBodyStyle = {
-  margin: 0,
-  color: 'var(--text-secondary)',
-  fontSize: '0.95rem',
-};
-
 const sectionStyle = {
   display: 'grid',
   gap: '8px',
@@ -169,4 +159,33 @@ const linkChipStyle = {
   textDecoration: 'none',
   color: 'var(--text-primary)',
   background: 'var(--material-thin)',
+};
+
+const chipStyle = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  minHeight: 28,
+  padding: '0 10px',
+  borderRadius: '999px',
+  border: '1px solid var(--separator)',
+  background: 'var(--material-thin)',
+  color: 'var(--text-secondary)',
+  fontSize: '0.82rem',
+};
+
+const detailsStyle = {
+  borderTop: '1px solid var(--separator)',
+  paddingTop: '10px',
+};
+
+const summaryStyle = {
+  cursor: 'pointer',
+  color: 'var(--text-secondary)',
+  fontSize: '0.92rem',
+};
+
+const detailsBodyStyle = {
+  display: 'grid',
+  gap: '12px',
+  marginTop: '10px',
 };

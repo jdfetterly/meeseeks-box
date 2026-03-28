@@ -12,40 +12,37 @@ export function ReviewPreviewPanel({
     <section style={panelStyle}>
       <div style={{ display: 'grid', gap: '6px' }}>
         <div style={eyebrowStyle}>Review preview</div>
-        <h2 style={panelTitleStyle}>Completion still flows through Review Queue</h2>
-        <p style={panelBodyStyle}>
-          Keep review read-only in the lab shell. The canonical decision surface remains `/review`.
-        </p>
+        <h2 style={panelTitleStyle}>Review</h2>
       </div>
 
       {reviewEntries.length === 0 ? (
         <div style={emptyStyle}>
           <strong>Nothing waiting</strong>
-          <p style={{ margin: 0, color: 'var(--text-tertiary)' }}>
-            When outputs finish, they should appear here first as a preview and in Review Queue as the source of truth.
-          </p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gap: '10px' }}>
-          {reviewEntries.slice(0, 3).map((entry) => (
-            <div key={entry.id} style={reviewCardStyle}>
-              <strong style={{ fontSize: '0.95rem' }}>{entry.summary}</strong>
-              <span style={metaStyle}>
-                {entry.workItemTitle}
-                {entry.specTitle ? ` • ${entry.specTitle}` : ''}
-              </span>
-              <p style={reasonStyle}>{entry.reviewReason}</p>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                <Link href={`/work/${entry.workItemId}`} style={linkChipStyle}>
-                  Open work
-                </Link>
-                <Link href="/review" style={linkChipStyle}>
-                  Open Review Queue
-                </Link>
+        <details style={detailsStyle} open>
+          <summary style={summaryStyle}>{reviewEntries.length} item{reviewEntries.length === 1 ? '' : 's'} waiting</summary>
+          <div style={detailsBodyStyle}>
+            {reviewEntries.slice(0, 3).map((entry) => (
+              <div key={entry.id} style={reviewCardStyle}>
+                <strong style={{ fontSize: '0.95rem' }}>{entry.summary}</strong>
+                <span style={metaStyle}>
+                  {entry.workItemTitle}
+                  {entry.specTitle ? ` • ${entry.specTitle}` : ''}
+                </span>
+                <p style={reasonStyle}>{entry.reviewReason}</p>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <Link href={`/work/${entry.workItemId}`} style={linkChipStyle}>
+                    Open work
+                  </Link>
+                  <Link href="/review" style={linkChipStyle}>
+                    Open Review Queue
+                  </Link>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </details>
       )}
 
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -82,15 +79,8 @@ const panelTitleStyle = {
   fontSize: '1.1rem',
 };
 
-const panelBodyStyle = {
-  margin: 0,
-  color: 'var(--text-secondary)',
-  fontSize: '0.95rem',
-};
-
 const emptyStyle = {
   display: 'grid',
-  gap: '6px',
   borderRadius: '18px',
   border: '1px solid var(--separator)',
   background: 'var(--material-thin)',
@@ -127,4 +117,21 @@ const linkChipStyle = {
   textDecoration: 'none',
   color: 'var(--text-primary)',
   background: 'var(--material-thin)',
+};
+
+const detailsStyle = {
+  borderTop: '1px solid var(--separator)',
+  paddingTop: '10px',
+};
+
+const summaryStyle = {
+  cursor: 'pointer',
+  color: 'var(--text-secondary)',
+  fontSize: '0.92rem',
+};
+
+const detailsBodyStyle = {
+  display: 'grid',
+  gap: '10px',
+  marginTop: '10px',
 };

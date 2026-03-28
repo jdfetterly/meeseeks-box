@@ -19,22 +19,45 @@ export function ProjectShellVariantPage({
   variant: ShellVariant;
 }) {
   const detail = model.projectDetail;
+  const currentPlan = model.currentPlan?.spec ?? null;
   const planPanel = (
     <Card>
       <CardHeader>
-        <CardTitle>Current plan</CardTitle>
+        <CardTitle>{variant === 'board_os' ? 'Plan context' : 'Current plan'}</CardTitle>
         <CardDescription>
-          Keep the current plan and decomposition controls visible while testing the shell, but do not let manual launch UI dominate the first screen.
+          {currentPlan?.title ?? 'No current plan yet.'}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ProjectSpecsManager
-          projectId={detail.project.id}
-          projectTitle={detail.project.title}
-          linkedRepos={detail.project.linkedRepos}
-          workspacePath={detail.workspace?.workspacePath ?? null}
-          specs={model.specs}
-        />
+        <div style={{ display: 'grid', gap: '14px' }}>
+          {currentPlan ? (
+            <div style={{ display: 'grid', gap: '10px' }}>
+              {currentPlan.summary ? (
+                <p style={bodyTextStyle}>{currentPlan.summary}</p>
+              ) : null}
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <span style={miniChipStyle}>{model.lanes.reduce((sum, lane) => sum + lane.cards.length, 0)} cards</span>
+                <span style={miniChipStyle}>{detail.summary.workspaceStatus.replaceAll('_', ' ')}</span>
+                <span style={miniChipStyle}>{model.reviewEntries.length} in review</span>
+              </div>
+            </div>
+          ) : (
+            <p style={bodyTextStyle}>Draft the first plan before using the board as the main execution surface.</p>
+          )}
+
+          <details style={detailsStyle}>
+            <summary style={summaryStyle}>Open plan details</summary>
+            <div style={detailsBodyStyle}>
+              <ProjectSpecsManager
+                projectId={detail.project.id}
+                projectTitle={detail.project.title}
+                linkedRepos={detail.project.linkedRepos}
+                workspacePath={detail.workspace?.workspacePath ?? null}
+                specs={model.specs}
+              />
+            </div>
+          </details>
+        </div>
       </CardContent>
     </Card>
   );
@@ -84,10 +107,10 @@ export function ProjectShellVariantPage({
 
           <div style={boardOsRailGridStyle}>
             <div style={{ display: 'grid', gap: '16px' }}>
-              {model.view === 'plan' ? planPanel : null}
               {activeWork}
             </div>
             <div style={{ display: 'grid', gap: '16px' }}>
+              {model.view === 'plan' ? planPanel : null}
               {assistant}
               {memory}
               {review}
@@ -193,7 +216,39 @@ const boardOsChipStyle = {
 
 const boardOsRailGridStyle = {
   display: 'grid',
-  gridTemplateColumns: 'minmax(360px, 0.92fr) minmax(300px, 0.72fr)',
+  gridTemplateColumns: 'minmax(0, 0.9fr) minmax(300px, 0.72fr)',
   gap: '16px',
   alignItems: 'start',
+};
+
+const bodyTextStyle = {
+  margin: 0,
+  color: 'var(--text-secondary)',
+};
+
+const miniChipStyle = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  minHeight: 28,
+  padding: '0 10px',
+  borderRadius: '999px',
+  border: '1px solid var(--separator)',
+  background: 'var(--material-thin)',
+  color: 'var(--text-secondary)',
+  fontSize: '0.82rem',
+};
+
+const detailsStyle = {
+  borderTop: '1px solid var(--separator)',
+  paddingTop: '10px',
+};
+
+const summaryStyle = {
+  cursor: 'pointer',
+  color: 'var(--text-secondary)',
+  fontSize: '0.92rem',
+};
+
+const detailsBodyStyle = {
+  marginTop: '12px',
 };
