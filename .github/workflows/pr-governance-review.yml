@@ -40,13 +40,6 @@ jobs:
             const repo = context.repo.repo;
             const prNumber = pr.number;
 
-            const reviews = await github.paginate(github.rest.pulls.listReviews, {
-              owner,
-              repo,
-              pull_number: prNumber,
-              per_page: 100,
-            });
-
             const comments = await github.paginate(github.rest.issues.listComments, {
               owner,
               repo,
@@ -54,15 +47,14 @@ jobs:
               per_page: 100,
             });
 
-            const approvedReview = reviews.find((review) => {
-              const actor = review.user?.login || "";
-              return allowedReviewActors.includes(actor) && review.state === "APPROVED";
-            });
-
             const approvalComment = comments.find((comment) => {
               const actor = comment.user?.login || "";
               const body = comment.body || "";
-              return allowedReviewActors.includes(actor) && /SECURITY_REVIEW:\s*APPROVED/i.test(body);
+              return (
+                allowedReviewActors.includes(actor) &&
+                /SECURITY_REVIEW:\s*APPROVED/i.test(body) &&
+                new RegExp(`PR_HEAD_SHA:\\s*${pr.head.sha}`, "i").test(body)
+              );
             });
 
             const body = pr.body || "";
@@ -73,9 +65,9 @@ jobs:
               return;
             }
 
-            if (!approvedReview && !approvalComment) {
+            if (!approvalComment) {
               core.setFailed(
-                "Missing security-agent approval. Require APPROVED review or comment `SECURITY_REVIEW: APPROVED` from an actor in ALLOWED_SECURITY_REVIEW_ACTORS."
+                "Missing current security-agent approval. Require a `SECURITY_REVIEW: APPROVED` comment from an allowed actor with `PR_HEAD_SHA` matching the current PR head SHA."
               );
               return;
             }

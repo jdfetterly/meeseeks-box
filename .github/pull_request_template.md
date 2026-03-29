@@ -7,8 +7,8 @@
 - Impacted controls / trust boundaries:
 - Security-review actor status: expected reviewer is `jd-security-review` (`Top Flight Security`)
 - Security-agent approval:
-  - Add an APPROVED review from an allowed security-review actor, or
   - Add a PR comment from an allowed security-review actor containing `SECURITY_REVIEW: APPROVED`
+  - Include `PR_HEAD_SHA: <current-pr-head-sha>` in that same comment
 
 ## Governance Checks
 - [ ] This change was proposed through a branch + PR, not a direct push to `main`.

@@ -115,7 +115,7 @@ Do not develop in the production checkout.
 
 The Meeseeks Box PR review gate should match the `iron-claw-mini` mechanism:
 
-1. Approved review from an allowed security-review actor, or
-2. PR comment from an allowed security-review actor containing `SECURITY_REVIEW: APPROVED`
+1. PR comment from an allowed security-review actor containing `SECURITY_REVIEW: APPROVED`
+2. The same comment must include `PR_HEAD_SHA` matching the current PR head SHA
 
 This is the required gate before human merge.

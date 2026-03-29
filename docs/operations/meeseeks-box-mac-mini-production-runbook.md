@@ -46,8 +46,8 @@ Before merge, every non-draft PR must satisfy:
 
 Accepted security-review signals:
 
-1. approved GitHub review from an allowed actor
-2. PR comment containing `SECURITY_REVIEW: APPROVED` from an allowed actor
+1. PR comment containing `SECURITY_REVIEW: APPROVED` from an allowed actor
+2. that same comment must include `PR_HEAD_SHA` matching the current PR head SHA
 
 Current expected security-review actor:
 
