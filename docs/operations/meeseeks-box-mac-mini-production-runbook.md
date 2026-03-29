@@ -138,6 +138,12 @@ Context variables that remain useful for operator visibility, even though the se
 The self-hosted deploy workflow does not require SSH deploy secrets.
 `MINI_DEPLOY_SSH_KEY` and `MINI_DEPLOY_KNOWN_HOSTS` can be removed later if you fully commit to the self-hosted runner transport.
 
+Additional GitHub secret required for automated security approval comments:
+
+- `JD_SECURITY_REVIEW_TOKEN`
+
+This token must belong to the `jd-security-review` account so the approval comment is posted by the allowlisted security-review actor rather than `github-actions[bot]`.
+
 ## Deploy Transport Prerequisite
 
 The checked-in deploy workflow is intended to run on a dedicated self-hosted runner on the mini with label `meeseeks-box-mini-deploy`.
@@ -153,6 +159,16 @@ Recommended runner properties:
 4. checkout/work directory stays under `/Users/agent-playground`
 
 Because this repository is public, keep the self-hosted runner narrowly scoped to merge-to-main deploy jobs only. Do not add self-hosted labels to PR workflows.
+
+## Automated Security Review
+
+The intended PR flow is:
+
+1. `PR Security Scan` runs on a GitHub-hosted runner for every non-draft PR update.
+2. If the scan passes, `PR Security Review Approval` posts or refreshes a SHA-bound approval comment as `jd-security-review`.
+3. `PR Governance Review` accepts that comment only when `PR_HEAD_SHA` matches the current PR head commit.
+
+This keeps the merge step human-only while removing the need for manual security-comment entry on every PR revision.
 
 ## launchd Service
 
