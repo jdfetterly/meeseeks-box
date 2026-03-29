@@ -11,6 +11,7 @@ Before editing anything for the shell exploration, read in this order:
 3. `planning/initiatives/INIT-001-meeseek-box-platform-foundation/features/FEAT-005-intent-outcome-control-plane-and-surface-redesign/requirements/REQ-006-plan-first-project-and-board.md`
 4. `planning/initiatives/INIT-001-meeseek-box-platform-foundation/features/FEAT-005-intent-outcome-control-plane-and-surface-redesign/requirements/REQ-007-review-queue-and-follow-up.md`
 5. `planning/experiments/shell-variant-scenarios.md`
+6. `planning/experiments/shell-variant-agent-prompts.md`
 
 ## What Exists
 
@@ -34,6 +35,48 @@ Fixed ports:
 - control: `3001`
 - opt2: `3002`
 - opt3: `3003`
+
+## Variant Briefs
+
+### `control`
+
+- Route focus: current `/projects/[id]`, `/work`, `/review`
+- Product role: baseline and safety rail
+- Distinguishing trait: existing Meeseeks Box flow with project context, plan management, board, and review separated into current production-style surfaces
+- What we are learning: what the current product already does well, where it creates too many hops, and which improvements should be preserved no matter which lab shell wins
+
+### `codex/mb-option-2-cockpit`
+
+- Route focus: `/lab/project/[id]/cockpit`
+- Product role: spec-first project workspace
+- Distinguishing traits:
+  - starts with intent and spec shaping
+  - assistant and execution share the workspace
+  - board appears after decomposition, not before
+  - memory and review stay close but secondary
+- What we are learning:
+  - whether Meeseeks Box should feel like a project cockpit centered on `intent -> spec -> cards -> review`
+  - whether a balanced assistant-plus-board shell preserves the AI-first north star better than a board-dominant shell
+  - whether the board becomes clearer when it is delayed until there is something real to execute
+
+### `codex/mb-option-3-board-os`
+
+- Route focus: `/lab/project/[id]/board-os`
+- Product role: board-dominant execution shell
+- Distinguishing traits:
+  - board is the primary operating surface
+  - assistant is secondary support
+  - plan, memory, and review support board movement rather than co-owning the screen
+- What we are learning:
+  - whether a board-led model materially improves execution tightness
+  - whether Meeseeks Box loses too much AI-first clarity when the board becomes the driver
+  - whether memory and review can stay useful without dominating the shell
+
+### `codex/mb-variant-base`
+
+- Product role: shared substrate, not a user-facing variant
+- Distinguishing trait: owns shared primitives, experiment routing, and fixes that both lab variants should inherit
+- What we are learning: which shell differences are truly variant-specific versus which improvements belong everywhere
 
 ## Ownership Rules
 

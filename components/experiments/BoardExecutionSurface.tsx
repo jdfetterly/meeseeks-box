@@ -54,7 +54,7 @@ export function BoardExecutionSurface({
       if (onAddTask) {
         onAddTask(newTaskTitle.trim());
       } else {
-        console.log("Submitting new task:", newTaskTitle);
+        console.log('Submitting new task:', newTaskTitle);
       }
       setNewTaskTitle('');
       setIsAddingTask(false);
@@ -64,7 +64,7 @@ export function BoardExecutionSurface({
   const activeLanes = lanes.filter((lane) => lane.title.toLowerCase() !== 'done');
   const todoCount = activeLanes.find((lane) => lane.lane === 'todo')?.cards.length ?? 0;
   const recommendedMove = todoCount > 0
-    ? 'Select the next reviewable card from To Do and steer it from the right rail.'
+    ? 'Select the next reviewable card from To Do and steer it from the same shell.'
     : 'No queued cards are visible. Use the board or Assistant to create the next reviewable slice.';
 
   return (
@@ -144,9 +144,9 @@ export function BoardExecutionSurface({
                 lane.cards.map((card) => {
                   const isMock = card.workItemId.startsWith('mock-');
                   return (
-                    <Link 
-                      key={card.workItemId} 
-                      href={buildHref(basePath, view, card.workItemId)} 
+                    <Link
+                      key={card.workItemId}
+                      href={buildHref(basePath, view, card.workItemId)}
                       style={cardStyle}
                       onClick={(e) => {
                         if (isMock && onSelectMockCard) {
@@ -178,24 +178,24 @@ export function BoardExecutionSurface({
               {lane.title.toLowerCase() === 'to do' && (
                 <div className="mt-1">
                   {isAddingTask ? (
-                    <form onSubmit={handleTaskSubmit} className="grid gap-2 p-3 rounded-xl border border-[var(--separator)] bg-[var(--material-ultra-thin)]">
-                      <input 
-                        type="text" 
+                    <form onSubmit={handleTaskSubmit} className="grid gap-2 rounded-xl border border-[var(--separator)] bg-[var(--material-ultra-thin)] p-3">
+                      <input
+                        type="text"
                         autoFocus
                         value={newTaskTitle}
                         onChange={(e) => setNewTaskTitle(e.target.value)}
-                        placeholder="What needs doing?" 
-                        className="bg-transparent border-none text-sm outline-none w-full text-[var(--text-primary)]"
+                        placeholder="What needs doing?"
+                        className="w-full border-none bg-transparent text-sm text-[var(--text-primary)] outline-none"
                       />
-                      <div className="flex gap-2 justify-end mt-2">
-                        <button type="button" onClick={() => setIsAddingTask(false)} className="text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-2 transition-colors">Cancel</button>
-                        <button type="submit" className="text-xs font-medium bg-[color-mix(in_srgb,var(--accent)_16%,transparent)] text-[var(--text-primary)] border border-[color-mix(in_srgb,var(--accent)_28%,transparent)] px-3 py-1 rounded-full hover:bg-[color-mix(in_srgb,var(--accent)_24%,transparent)] transition-colors">Save</button>
+                      <div className="mt-2 flex justify-end gap-2">
+                        <button type="button" onClick={() => setIsAddingTask(false)} className="px-2 text-xs font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]">Cancel</button>
+                        <button type="submit" className="rounded-full border border-[color-mix(in_srgb,var(--accent)_28%,transparent)] bg-[color-mix(in_srgb,var(--accent)_16%,transparent)] px-3 py-1 text-xs font-medium text-[var(--text-primary)] transition-colors hover:bg-[color-mix(in_srgb,var(--accent)_24%,transparent)]">Save</button>
                       </div>
                     </form>
                   ) : (
-                    <button 
+                    <button
                       onClick={() => setIsAddingTask(true)}
-                      className="w-full text-left text-sm font-medium text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--material-ultra-thin)] py-2 px-3 rounded-xl transition-colors flex items-center gap-2"
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-[var(--text-tertiary)] transition-colors hover:bg-[var(--material-ultra-thin)] hover:text-[var(--text-primary)]"
                     >
                       <span className="text-lg leading-none">+</span> Add task
                     </button>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { OpenChatPanelButton } from '@/components/chat-panel/OpenChatPanelButton';
 import { AssistantWorkspacePanel } from '@/components/experiments/AssistantWorkspacePanel';
 import { BoardExecutionSurface } from '@/components/experiments/BoardExecutionSurface';
 import { MemoryContextRail } from '@/components/experiments/MemoryContextRail';
@@ -25,17 +26,24 @@ export function ProjectShellVariantPage({
 }) {
   const detail = model.projectDetail;
   const currentPlan = model.currentPlan?.spec ?? null;
+  const currentPlanDetail = model.currentPlan;
+  const hasCards = (currentPlanDetail?.links.length ?? 0) > 0;
+  const workspaceReady = detail.summary.workspaceStatus === 'ready';
 
-  // Local state for mock cards during the exploration
   const [localLanes, setLocalLanes] = useState<WorkBoardLane[]>(model.lanes);
   const [localActiveMockData, setLocalActiveMockData] = useState<ActiveWorkPaneModel | null>(null);
   const [isDrafting, setIsDrafting] = useState(false);
 
   const handleAddNewTask = (title: string) => {
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
+      return;
+    }
+
     const mockId = `mock-${Date.now()}`;
     const newCard = {
       workItemId: mockId,
-      title,
+      title: trimmedTitle,
       scope: 'Manual Entry',
       priority: 'default',
       projectId: detail.project.id,
@@ -58,8 +66,7 @@ export function ProjectShellVariantPage({
       scheduleStatus: null,
       scheduleSource: null,
     } as WorkBoardCard;
-    
-    // Create the mock full model so the right pane can render it
+
     const mockActiveWork: ActiveWorkPaneModel = {
       sourceConversationTitle: null,
       openReviewEntry: null,
@@ -68,7 +75,7 @@ export function ProjectShellVariantPage({
         projectId: detail.project.id,
         status: 'queued',
         scope: 'Manual Entry',
-        title: title,
+        title: trimmedTitle,
         priority: 'default',
         delegatedAgentId: null,
         reviewState: 'not_ready',
@@ -79,25 +86,24 @@ export function ProjectShellVariantPage({
       },
       spec: {
         id: `spec-${mockId}`,
-        title: title,
+        title: trimmedTitle,
         intent: '',
         outcome: '',
-      } as any
+      } as any,
     };
 
-    setLocalLanes(prev => prev.map(lane => {
-      if (lane.title.toLowerCase() === 'to do') {
-        return { ...lane, cards: [...lane.cards, newCard] };
-      }
-      return lane;
-    }));
-    
+    setLocalLanes((previous) =>
+      previous.map((lane) =>
+        lane.title.toLowerCase() === 'to do'
+          ? { ...lane, cards: [...lane.cards, newCard] }
+          : lane,
+      ),
+    );
     setLocalActiveMockData(mockActiveWork);
-    setIsDrafting(false); // Task is added, now we are editing it!
+    setIsDrafting(false);
   };
 
   const handleCreateDraft = () => {
-    // Open the right pane with an empty template
     setLocalActiveMockData({
       sourceConversationTitle: null,
       openReviewEntry: null,
@@ -116,59 +122,67 @@ export function ProjectShellVariantPage({
         updatedAt: new Date().toISOString(),
       },
       spec: {
-        id: `spec-draft`,
+        id: 'spec-draft',
         title: '',
         intent: '',
         outcome: '',
-      } as any
+      } as any,
     });
     setIsDrafting(true);
   };
 
   const handleSelectMockCard = (mockId: string) => {
-    // If they click a mock card in the board, simulate it opening
-    const card = localLanes.flatMap(l => l.cards).find(c => c.workItemId === mockId);
-    if (card) {
-      setLocalActiveMockData({
-        sourceConversationTitle: null,
-        openReviewEntry: null,
-        workItem: {
-          id: mockId,
-          projectId: detail.project.id,
-          status: 'queued',
-          scope: card.scope,
-          title: card.title,
-          priority: 'default',
-          delegatedAgentId: null,
-          reviewState: 'not_ready',
-          linkedRepos: [],
-          sourceConversationId: null,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        spec: {
-          id: `spec-${mockId}`,
-          title: card.title,
-          intent: '',
-          outcome: '',
-        } as any
-      });
-      setIsDrafting(false);
+    const card = localLanes.flatMap((lane) => lane.cards).find((item) => item.workItemId === mockId);
+    if (!card) {
+      return;
     }
+
+    setLocalActiveMockData({
+      sourceConversationTitle: null,
+      openReviewEntry: null,
+      workItem: {
+        id: mockId,
+        projectId: detail.project.id,
+        status: 'queued',
+        scope: card.scope,
+        title: card.title,
+        priority: 'default',
+        delegatedAgentId: null,
+        reviewState: 'not_ready',
+        linkedRepos: [],
+        sourceConversationId: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      spec: {
+        id: `spec-${mockId}`,
+        title: card.title,
+        intent: '',
+        outcome: '',
+      } as any,
+    });
+    setIsDrafting(false);
   };
 
   const activeWorkToRender = localActiveMockData || model.activeWork;
   const hasActiveWork = !!activeWorkToRender;
+
+  const assistant = (
+    <AssistantWorkspacePanel
+      detail={detail}
+      currentPlan={model.currentPlan}
+      compact={variant === 'board_os'}
+    />
+  );
+  const memory = <MemoryContextRail detail={detail} compact={variant === 'board_os'} />;
+  const review = <ReviewPreviewPanel reviewEntries={model.reviewEntries} projectId={detail.project.id} />;
+  const standingWork = <StandingWorkPreviewPanel lanes={localLanes} projectId={detail.project.id} />;
   const supportStack = (
     <div className="grid gap-4">
-      <AssistantWorkspacePanel
-        detail={detail}
-        currentPlan={model.currentPlan}
-        compact
-      />
-      <MemoryContextRail detail={detail} compact />
-      <StandingWorkPreviewPanel lanes={localLanes} projectId={detail.project.id} />
-      <ReviewPreviewPanel reviewEntries={model.reviewEntries} projectId={detail.project.id} />
+      {assistant}
+      {memory}
+      {standingWork}
+      {review}
     </div>
   );
 
@@ -176,23 +190,203 @@ export function ProjectShellVariantPage({
     <BoardExecutionSurface
       basePath={basePath}
       view={model.view}
-      currentPlanTitle={model.currentPlan?.spec.title ?? null}
+      currentPlanTitle={currentPlan?.title ?? null}
       lanes={localLanes}
       projectId={detail.project.id}
       projectTitle={detail.project.title}
       suggestedPrompt={detail.summary.suggestedPrompt ?? `Plan the next step for ${detail.project.title}.`}
       workspacePath={detail.workspace?.workspacePath ?? null}
       linkedRepos={detail.project.linkedRepos}
-      starterSpecId={model.currentPlan?.spec.id ?? null}
+      starterSpecId={currentPlan?.id ?? null}
       onAddTask={handleAddNewTask}
       onSelectMockCard={handleSelectMockCard}
     />
   );
 
+  const specSurface = (
+    <Card>
+      <CardHeader>
+        <CardTitle>{currentPlanDetail ? 'Current spec' : 'Start with the spec'}</CardTitle>
+        <CardDescription>
+          {currentPlanDetail
+            ? 'Shape the spec first. The board becomes useful after decomposition.'
+            : 'Capture intent, outcome, and acceptance before the board appears.'}
+        </CardDescription>
+      </CardHeader>
+      <CardContent style={{ display: 'grid', gap: '16px' }}>
+        {currentPlanDetail ? (
+          <>
+            <div style={{ display: 'grid', gap: '10px' }}>
+              <div style={{ display: 'grid', gap: '6px' }}>
+                <strong style={{ fontSize: '1.05rem' }}>{currentPlanDetail.spec.title}</strong>
+                <p style={bodyTextStyle}>{currentPlanDetail.spec.outcome}</p>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <span style={miniChipStyle}>
+                  {currentPlanDetail.readiness.isReady ? 'Ready to decompose' : 'Needs refinement'}
+                </span>
+                <span style={miniChipStyle}>
+                  {hasCards ? `${currentPlanDetail.links.length} cards created` : 'No cards yet'}
+                </span>
+                <span style={miniChipStyle}>{workspaceReady ? 'Workspace ready' : 'Workspace not ready'}</span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <OpenChatPanelButton
+                label="Refine spec"
+                intent="spec_planning"
+                context={{
+                  entityType: 'project',
+                  entityId: detail.project.id,
+                  projectId: detail.project.id,
+                  page: 'lab-project',
+                  suggestedPrompt: `Refine the current plan for ${detail.project.title}. Keep it sharp and lightweight.`,
+                  draftPrompt: `Refine the current plan for ${detail.project.title}.
+
+Plan title: ${currentPlanDetail.spec.title}
+Intent:
+${currentPlanDetail.spec.intent}
+
+Outcome:
+${currentPlanDetail.spec.outcome}
+
+In scope:
+${currentPlanDetail.spec.inScope.join('\n')}`,
+                  starterRepoList: detail.project.linkedRepos,
+                  starterWorkspacePath: detail.workspace?.workspacePath ?? null,
+                  starterSpecId: currentPlanDetail.spec.id,
+                  starterSpecTitle: currentPlanDetail.spec.title,
+                }}
+              />
+              <OpenChatPanelButton
+                label={hasCards ? 'Rework decomposition' : 'Turn into cards'}
+                intent="spec_decomposition"
+                context={{
+                  entityType: 'project',
+                  entityId: detail.project.id,
+                  projectId: detail.project.id,
+                  page: 'lab-project',
+                  suggestedPrompt: `Turn the current plan for ${detail.project.title} into small reviewable cards.`,
+                  draftPrompt: `Turn the current plan for ${detail.project.title} into the smallest useful set of cards I can review cleanly.`,
+                  starterRepoList: detail.project.linkedRepos,
+                  starterWorkspacePath: detail.workspace?.workspacePath ?? null,
+                  starterSpecId: currentPlanDetail.spec.id,
+                  starterSpecTitle: currentPlanDetail.spec.title,
+                }}
+                variant="outline"
+              />
+            </div>
+
+            <details style={panelDisclosureStyle} open>
+              <summary style={summaryStyle}>Intent and scope</summary>
+              <div style={detailsBodyStyle}>
+                <p style={bodyTextStyle}>{currentPlanDetail.spec.intent}</p>
+                <ul style={listStyle}>
+                  {currentPlanDetail.spec.inScope.length > 0 ? (
+                    currentPlanDetail.spec.inScope.map((item) => <li key={item}>{item}</li>)
+                  ) : (
+                    <li>Scope still needs clarification.</li>
+                  )}
+                </ul>
+              </div>
+            </details>
+
+            <details style={panelDisclosureStyle}>
+              <summary style={summaryStyle}>Acceptance</summary>
+              <div style={detailsBodyStyle}>
+                <ul style={listStyle}>
+                  {currentPlanDetail.spec.acceptanceCriteria.length > 0 ? (
+                    currentPlanDetail.spec.acceptanceCriteria.map((item) => <li key={item}>{item}</li>)
+                  ) : (
+                    <li>Add acceptance criteria before decomposition.</li>
+                  )}
+                </ul>
+              </div>
+            </details>
+          </>
+        ) : (
+          <>
+            <p style={bodyTextStyle}>
+              Start in assistant. Describe the outcome, what matters now, and what done should look like.
+            </p>
+            <OpenChatPanelButton
+              label="Draft spec"
+              intent="spec_planning"
+              context={{
+                entityType: 'project',
+                entityId: detail.project.id,
+                projectId: detail.project.id,
+                page: 'lab-project',
+                suggestedPrompt: `Help me shape the current plan for ${detail.project.title}. Keep it lightweight and only ask if something important is missing.`,
+                draftPrompt: `Help me define the current plan for ${detail.project.title}.
+
+What I want built:
+What matters most right now:
+Anything already known about repos or workspace:
+What "done" should look like:
+
+Draft the plan and get it ready to turn into cards.`,
+                starterRepoList: detail.project.linkedRepos,
+                starterWorkspacePath: detail.workspace?.workspacePath ?? null,
+              }}
+            />
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  const boardStagePanel = hasCards ? (
+    board
+  ) : (
+    <Card>
+      <CardHeader>
+        <CardTitle>Execution board</CardTitle>
+        <CardDescription>Board stays hidden until the spec has been turned into cards.</CardDescription>
+      </CardHeader>
+      <CardContent style={{ display: 'grid', gap: '12px' }}>
+        <p style={bodyTextStyle}>Finish the spec and create reviewable execution cards first.</p>
+        {currentPlanDetail ? (
+          <OpenChatPanelButton
+            label="Turn spec into cards"
+            intent="spec_decomposition"
+            context={{
+              entityType: 'project',
+              entityId: detail.project.id,
+              projectId: detail.project.id,
+              page: 'lab-project',
+              suggestedPrompt: `Turn the current plan for ${detail.project.title} into small reviewable cards.`,
+              draftPrompt: `Turn the current plan for ${detail.project.title} into the smallest useful set of cards I can review cleanly.`,
+              starterRepoList: detail.project.linkedRepos,
+              starterWorkspacePath: detail.workspace?.workspacePath ?? null,
+              starterSpecId: currentPlanDetail.spec.id,
+              starterSpecTitle: currentPlanDetail.spec.title,
+            }}
+          />
+        ) : null}
+      </CardContent>
+    </Card>
+  );
+
+  const activeWorkPlaceholder = (
+    <section className="grid gap-3 rounded-[24px] border border-[var(--separator)] bg-[var(--material-ultra-thin)] p-5">
+      <div className="grid gap-1">
+        <span className="text-[0.72rem] uppercase tracking-[0.08em] font-bold text-[var(--text-quaternary)]">
+          Active card zoom
+        </span>
+        <h2 className="m-0 text-[1.1rem] text-[var(--text-primary)]">Select a card to deepen execution</h2>
+      </div>
+      <p className="m-0 text-[0.94rem] text-[var(--text-secondary)]">
+        Keep the board as the primary surface, then use the right rail for the card you are actively steering. Assistant, memory, and review stay visible so the shell does not collapse into a blind task board.
+      </p>
+    </section>
+  );
+
   const activeWork = activeWorkToRender ? (
-    <div className="h-full flex flex-col gap-4">
-      {isDrafting && (
-        <div className="bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] border border-[color-mix(in_srgb,var(--accent)_20%,transparent)] rounded-lg p-3 text-sm text-[var(--accent)] flex items-center justify-between">
+    <div className="flex h-full flex-col gap-4">
+      {isDrafting ? (
+        <div className="flex items-center justify-between rounded-lg border border-[color-mix(in_srgb,var(--accent)_20%,transparent)] bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] p-3 text-sm text-[var(--accent)]">
           <span>Drafting a new task...</span>
           <button
             onClick={() => {
@@ -200,109 +394,177 @@ export function ProjectShellVariantPage({
                 handleAddNewTask(activeWorkToRender.workItem.title);
               }
             }}
-            className="font-bold underline cursor-pointer"
+            className="cursor-pointer font-bold underline"
           >
             Save to Board
           </button>
         </div>
-      )}
+      ) : null}
       <ActiveWorkPane activeWork={activeWorkToRender} />
-      <div className="border-t border-[var(--separator)] pt-4">
-        {supportStack}
-      </div>
+      <div className="border-t border-[var(--separator)] pt-4">{supportStack}</div>
     </div>
   ) : (
     <div className="grid gap-4">
-      <section className="grid gap-3 rounded-[24px] border border-[var(--separator)] bg-[var(--material-ultra-thin)] p-5">
-        <div className="grid gap-1">
-          <span className="text-[0.72rem] uppercase tracking-[0.08em] font-bold text-[var(--text-quaternary)]">
-            Active card zoom
-          </span>
-          <h2 className="m-0 text-[1.1rem] text-[var(--text-primary)]">Select a card to deepen execution</h2>
-        </div>
-        <p className="m-0 text-[0.94rem] text-[var(--text-secondary)]">
-          Keep the board as the primary surface, then use the right rail for the card you are actively steering. Assistant, memory, and review stay visible so the shell does not collapse into a blind task board.
-        </p>
-      </section>
+      {activeWorkPlaceholder}
       {supportStack}
     </div>
   );
 
+  const memoryDisclosure = (
+    <details style={panelDisclosureStyle}>
+      <summary style={summaryStyle}>Memory</summary>
+      <div style={detailsBodyStyle}>{memory}</div>
+    </details>
+  );
+  const reviewDisclosure = (
+    <details style={panelDisclosureStyle}>
+      <summary style={summaryStyle}>Review</summary>
+      <div style={detailsBodyStyle}>{review}</div>
+    </details>
+  );
+  const standingWorkDisclosure = (
+    <details style={panelDisclosureStyle}>
+      <summary style={summaryStyle}>Standing work</summary>
+      <div style={detailsBodyStyle}>{standingWork}</div>
+    </details>
+  );
+
   if (variant === 'board_os') {
     return (
-      <div className="h-full w-full flex overflow-hidden" style={{ background: 'var(--bg)' }}>
-        {/* LEFT PANE - Context Navigation */}
-        <div className="hidden md:flex flex-col items-center w-14 shrink-0 border-r border-[var(--separator)] py-5 gap-4 z-0">
-          <div className="w-9 h-9 rounded-xl bg-[var(--material-thin)] flex items-center justify-center cursor-pointer text-[var(--text-secondary)] border border-[var(--separator)] hover:bg-[var(--material-ultra-thin)] hover:text-[var(--text-primary)] transition-all group relative" title="Plan">
+      <div className="flex h-full w-full overflow-hidden" style={{ background: 'var(--bg)' }}>
+        <div className="hidden shrink-0 flex-col items-center gap-4 border-r border-[var(--separator)] py-5 md:flex md:w-14">
+          <div className="group relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-[var(--separator)] bg-[var(--material-thin)] text-[var(--text-secondary)] transition-all hover:bg-[var(--material-ultra-thin)] hover:text-[var(--text-primary)]" title="Plan">
             <ClipboardList size={18} />
-            <div className="absolute left-12 bg-[var(--foreground)] text-[var(--background)] text-xs font-semibold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+            <div className="pointer-events-none absolute left-12 rounded bg-[var(--foreground)] px-2 py-1 text-xs font-semibold whitespace-nowrap text-[var(--background)] opacity-0 transition-opacity group-hover:opacity-100">
               Project Plan
             </div>
           </div>
-          <div className="w-9 h-9 rounded-xl bg-[var(--material-thin)] flex items-center justify-center cursor-pointer text-[var(--text-secondary)] border border-[var(--separator)] hover:bg-[var(--material-ultra-thin)] hover:text-[var(--text-primary)] transition-all group relative" title="Memory">
+          <div className="group relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-[var(--separator)] bg-[var(--material-thin)] text-[var(--text-secondary)] transition-all hover:bg-[var(--material-ultra-thin)] hover:text-[var(--text-primary)]" title="Memory">
             <Brain size={18} />
-            <div className="absolute left-12 bg-[var(--foreground)] text-[var(--background)] text-xs font-semibold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+            <div className="pointer-events-none absolute left-12 rounded bg-[var(--foreground)] px-2 py-1 text-xs font-semibold whitespace-nowrap text-[var(--background)] opacity-0 transition-opacity group-hover:opacity-100">
               Project Memory
             </div>
           </div>
         </div>
 
-        {/* CENTER PANE - Execution Core */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-y-auto px-4 md:px-8 py-6 gap-6 transition-all duration-300 relative z-0">
+        <div className="relative z-0 flex min-w-0 flex-1 flex-col gap-6 overflow-y-auto px-4 py-6 transition-all duration-300 md:px-8">
           <ProjectExecutionHeader detail={detail} variant={variant} />
           {board}
         </div>
 
-        {/* RIGHT PANE - Active Context Zoom + Support Surfaces */}
-        <div 
-          className={`flex flex-col h-full bg-[var(--material-ultra-thin)] border-l border-[var(--separator)] transition-transform duration-300 absolute md:relative right-0 top-0 bottom-0 z-20 w-full md:w-[35%] md:min-w-[380px] md:max-w-xl shadow-2xl md:shadow-none ${hasActiveWork ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}
+        <div
+          className={`absolute top-0 right-0 bottom-0 z-20 flex h-full w-full flex-col border-l border-[var(--separator)] bg-[var(--material-ultra-thin)] shadow-2xl transition-transform duration-300 md:relative md:w-[35%] md:min-w-[380px] md:max-w-xl md:shadow-none ${hasActiveWork ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}
         >
-          {/* Floating 'New Task' Button attached to the Right Pane's edge (always accessible from the right side) */}
-          {!hasActiveWork && (
-            <div className="absolute left-[-48px] top-6 hidden md:block">
+          {!hasActiveWork ? (
+            <div className="absolute top-6 left-[-48px] hidden md:block">
               <button
                 onClick={handleCreateDraft}
-                className="w-10 h-10 bg-[var(--bg)] border border-[var(--separator)] shadow-md rounded-full flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--accent)] hover:bg-[var(--material-thin)] transition-all group"
+                className="group flex h-10 w-10 items-center justify-center rounded-full border border-[var(--separator)] bg-[var(--bg)] text-[var(--text-secondary)] shadow-md transition-all hover:border-[var(--accent)] hover:bg-[var(--material-thin)] hover:text-[var(--text-primary)]"
                 title="Create New Task"
               >
-                <Plus size={20} className="group-hover:scale-110 transition-transform" />
+                <Plus size={20} className="transition-transform group-hover:scale-110" />
               </button>
             </div>
-          )}
+          ) : null}
 
-          <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-6 relative">
+          <div className="relative flex-1 overflow-y-auto p-4 pb-6 md:p-6">
             <div className="absolute top-4 right-4 flex gap-2">
-              <button onClick={handleCreateDraft} className="w-8 h-8 rounded-full bg-[var(--material-thin)] border border-[var(--separator)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--accent)] transition-all" title="Create New Task">
+              <button
+                onClick={handleCreateDraft}
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--separator)] bg-[var(--material-thin)] text-[var(--text-secondary)] transition-all hover:border-[var(--accent)] hover:text-[var(--text-primary)]"
+                title="Create New Task"
+              >
                 <Plus size={16} />
               </button>
               {hasActiveWork ? (
-                <a href={basePath} onClick={() => setLocalActiveMockData(null)} className="w-8 h-8 rounded-full bg-[var(--material-thin)] border border-[var(--separator)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all" title="Close Pane">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                <a
+                  href={basePath}
+                  onClick={() => setLocalActiveMockData(null)}
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--separator)] bg-[var(--material-thin)] text-[var(--text-secondary)] transition-all hover:text-[var(--text-primary)]"
+                  title="Close Pane"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
                 </a>
               ) : null}
             </div>
-            <div className="md:hidden pb-4 mt-8">
+            <div className="mt-8 pb-4 md:hidden">
               {hasActiveWork ? (
                 <button onClick={() => setLocalActiveMockData(null)} className="text-sm font-medium text-[var(--text-secondary)]">← Close Card</button>
               ) : null}
             </div>
-            <div className="pt-10">
-              {activeWork}
-            </div>
+            <div className="pt-10">{activeWork}</div>
           </div>
         </div>
       </div>
     );
   }
 
-  // Fallback views code below remains mostly unchanged...
   return (
     <div className="h-full overflow-y-auto" style={{ background: 'var(--bg)' }}>
-      <ProjectExecutionHeader detail={detail} variant={variant} />
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.55fr) minmax(300px, 0.72fr)', gap: '16px' }}>
-         {board}
-         {activeWork}
+      <div style={pageStyle}>
+        <ProjectExecutionHeader detail={detail} variant={variant} />
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.55fr) minmax(300px, 0.72fr)', gap: '16px', alignItems: 'start' }}>
+          <div style={{ display: 'grid', gap: '16px' }}>
+            {specSurface}
+            {boardStagePanel}
+            {activeWorkToRender ? <ActiveWorkPane activeWork={activeWorkToRender} /> : activeWorkPlaceholder}
+          </div>
+          <div style={{ display: 'grid', gap: '16px' }}>
+            {assistant}
+            {memoryDisclosure}
+            {standingWorkDisclosure}
+            {reviewDisclosure}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
+
+const pageStyle = {
+  maxWidth: 1460,
+  margin: '0 auto',
+  padding: 'var(--space-6) var(--space-4) var(--space-12)',
+  display: 'grid',
+  gap: '18px',
+};
+
+const bodyTextStyle = {
+  margin: 0,
+  color: 'var(--text-secondary)',
+};
+
+const listStyle = {
+  margin: 0,
+  paddingLeft: '1.1rem',
+  color: 'var(--text-secondary)',
+};
+
+const miniChipStyle = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  minHeight: 28,
+  padding: '0 10px',
+  borderRadius: '999px',
+  border: '1px solid var(--separator)',
+  background: 'var(--material-thin)',
+  color: 'var(--text-secondary)',
+  fontSize: '0.82rem',
+};
+
+const summaryStyle = {
+  cursor: 'pointer',
+  color: 'var(--text-secondary)',
+  fontSize: '0.92rem',
+};
+
+const detailsBodyStyle = {
+  marginTop: '12px',
+};
+
+const panelDisclosureStyle = {
+  borderRadius: '18px',
+  border: '1px solid var(--separator)',
+  background: 'var(--material-ultra-thin)',
+  padding: '12px 14px',
+};

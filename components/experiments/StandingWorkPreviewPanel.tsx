@@ -40,7 +40,7 @@ export function StandingWorkPreviewPanel({
         <div style={eyebrowStyle}>Standing work</div>
         <h2 style={panelTitleStyle}>Recurring and scheduled outcomes</h2>
         <p style={panelBodyStyle}>
-          Keep non-code delegated work visible in the same shell so Board OS does not collapse into a pure execution queue.
+          Keep non-code delegated work visible in the same shell so the experiment can be judged on more than coding cards.
         </p>
       </div>
 
@@ -48,7 +48,7 @@ export function StandingWorkPreviewPanel({
         <div style={emptyStyle}>
           <strong>No standing work linked yet</strong>
           <p style={{ margin: 0, color: 'var(--text-tertiary)' }}>
-            Use standing delegation when a project needs recurring output, not just one-off card execution.
+            Use standing delegation when a project needs recurring output, not just one-off execution.
           </p>
         </div>
       ) : (
