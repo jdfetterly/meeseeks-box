@@ -1,0 +1,92 @@
+name: PR Security Review Approval
+
+on:
+  workflow_run:
+    workflows: ["PR Security Scan"]
+    types: [completed]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  publish-security-review:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate security review token
+        shell: bash
+        env:
+          JD_SECURITY_REVIEW_TOKEN: ${{ secrets.JD_SECURITY_REVIEW_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${JD_SECURITY_REVIEW_TOKEN:-}" ]; then
+            echo "Missing required secret: JD_SECURITY_REVIEW_TOKEN" >&2
+            exit 1
+          fi
+
+      - name: Publish SHA-bound security approval
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.JD_SECURITY_REVIEW_TOKEN }}
+          script: |
+            const run = context.payload.workflow_run;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prs = run.pull_requests || [];
+
+            if (prs.length === 0) {
+              core.info("No PR is associated with this workflow_run; nothing to approve.");
+              return;
+            }
+
+            const prNumber = prs[0].number;
+            const runUrl = run.html_url;
+
+            const pr = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: prNumber,
+            });
+
+            const headSha = pr.data.head.sha;
+            const marker = "SECURITY_REVIEW: APPROVED";
+            const body = [
+              marker,
+              `PR_HEAD_SHA: ${headSha}`,
+              "SCAN_WORKFLOW: PR Security Scan",
+              `SCAN_RUN_URL: ${runUrl}`,
+            ].join("\n");
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number: prNumber,
+              per_page: 100,
+            });
+
+            const existing = comments.find((comment) => {
+              const actor = comment.user?.login || "";
+              const text = comment.body || "";
+              return actor === context.actor && text.includes(marker);
+            });
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+              core.info(`Updated existing security approval comment for PR #${prNumber}.`);
+              return;
+            }
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: prNumber,
+              body,
+            });
+            core.info(`Created security approval comment for PR #${prNumber}.`);
