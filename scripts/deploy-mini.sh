@@ -78,8 +78,28 @@ npm ci
 echo "==> Building production bundle"
 npm run build
 
-echo "==> Restarting launchd service"
-launchctl kickstart -k "gui/$(id -u)/$SERVICE_LABEL"
+PLIST_SOURCE="$REPO_PATH/ops/launchd/${SERVICE_LABEL}.plist.example"
+PLIST_DEST="$HOME/Library/LaunchAgents/${SERVICE_LABEL}.plist"
+LAUNCHCTL_TARGET="gui/$(id -u)/$SERVICE_LABEL"
+
+if [[ -f "$PLIST_SOURCE" ]]; then
+  echo "==> Refreshing launchd plist"
+  mkdir -p "$HOME/Library/LaunchAgents"
+  cp "$PLIST_SOURCE" "$PLIST_DEST"
+fi
+
+if launchctl print "$LAUNCHCTL_TARGET" >/dev/null 2>&1; then
+  echo "==> Restarting launchd service"
+  launchctl kickstart -k "$LAUNCHCTL_TARGET"
+else
+  if [[ ! -f "$PLIST_DEST" ]]; then
+    echo "Launchd plist missing: $PLIST_DEST" >&2
+    exit 1
+  fi
+  echo "==> Bootstrapping launchd service"
+  launchctl bootstrap "gui/$(id -u)" "$PLIST_DEST"
+  launchctl kickstart -k "$LAUNCHCTL_TARGET"
+fi
 
 echo "==> Waiting for healthcheck: $HEALTHCHECK_URL"
 attempt=1

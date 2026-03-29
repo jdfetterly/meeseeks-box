@@ -23,6 +23,9 @@ jobs:
       - macOS
       - meeseeks-box-mini-deploy
     steps:
+      - name: Checkout merged main
+        uses: actions/checkout@v4
+
       - name: Validate deploy configuration
         shell: bash
         env:
@@ -44,6 +47,8 @@ jobs:
 
       - name: Verify local runner checkout path
         shell: bash
+        env:
+          MINI_DEPLOY_REPO_PATH: ${{ vars.MINI_DEPLOY_REPO_PATH }}
         run: |
           set -euo pipefail
           if [ ! -d "${MINI_DEPLOY_REPO_PATH}" ]; then
@@ -59,7 +64,6 @@ jobs:
           MINI_DEPLOY_HEALTHCHECK_URL: ${{ vars.MINI_DEPLOY_HEALTHCHECK_URL }}
         run: |
           set -euo pipefail
-          cd "${MINI_DEPLOY_REPO_PATH}"
           bash ./scripts/deploy-mini.sh \
             --repo-path "${MINI_DEPLOY_REPO_PATH}" \
             --service-label "${MINI_DEPLOY_SERVICE_LABEL}" \

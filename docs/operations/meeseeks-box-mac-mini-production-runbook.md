@@ -193,9 +193,10 @@ Its job is:
 1. fetch and fast-forward `main`
 2. run `npm ci`
 3. run `npm run build`
-4. restart the `launchd` service
-5. hit the healthcheck URL
-6. run the optional post-deploy validation hook
+4. refresh or install the `launchd` plist if needed
+5. restart or bootstrap the `launchd` service
+6. hit the healthcheck URL
+7. run the optional post-deploy validation hook
 
 ## Post-Deploy Validation Skill
 
