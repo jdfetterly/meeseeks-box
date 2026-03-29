@@ -61,20 +61,16 @@ Why:
 The preferred shape is:
 
 1. GitHub Actions detects a valid push to `main`.
-2. GitHub Actions triggers a mini-side deploy entrypoint.
-3. The mini runs the repo-local deploy script.
+2. A dedicated self-hosted runner on the mini picks up the deploy job.
+3. The mini runs the repo-local deploy script in the production checkout.
 4. The mini then runs the post-deploy validation skill.
 
-The transport may be:
-
-- direct SSH from GitHub Actions to the mini, or
-- a mini-local agent/skill dispatch path
-
-The policy requirement is not the transport itself. The requirement is:
+The policy requirement is:
 
 - deploy happens only after a valid merge to `main`
 - deploy remains auditable
 - deploy is not a hidden side effect of a branch push
+- deploy execution stays on the mini, not on a public GitHub-hosted runner
 
 ## Required GitHub Variables
 

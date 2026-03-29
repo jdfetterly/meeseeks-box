@@ -20,8 +20,9 @@ Mac mini runtime context:
 Recommended Meeseeks Box paths on the mini:
 
 - production checkout: `/Users/agent-playground/code/repos/meeseeks-box`
-- development worktrees: `/Users/agent-playground/code/workspaces/meeseeks-box-*`
+- development worktrees: `/Users/agent-playground/code/worktrees/meeseeks-box`
 - production state dir: `/Users/agent-playground/.meeseeks-box-prod`
+- self-hosted runner home: `/Users/agent-playground/actions-runner/meeseeks-box-deploy`
 
 ## Branching Model
 
@@ -122,31 +123,35 @@ Recommended:
 - `DENIED_MAIN_PUSH_ACTORS=openclaw-mini`
 - `ALLOWED_SECURITY_REVIEW_ACTORS=jd-security-review`
 
-Deploy variables:
+Deploy variables used by the self-hosted deploy workflow:
 
-- `MINI_DEPLOY_HOST` recommended: `100.105.238.17`
-- `MINI_DEPLOY_USER` recommended: `agent-playground`
 - `MINI_DEPLOY_REPO_PATH` recommended: `/Users/agent-playground/code/repos/meeseeks-box`
 - `MINI_DEPLOY_SERVICE_LABEL` recommended: `com.jd.meeseeks-box`
 - `MINI_DEPLOY_HEALTHCHECK_URL` recommended: `http://127.0.0.1:3001/`
-- `MINI_DEPLOY_SSH_PORT` optional
 
-Deploy secrets:
+Context variables that remain useful for operator visibility, even though the self-hosted workflow does not require them:
 
-- `MINI_DEPLOY_SSH_KEY`
-- `MINI_DEPLOY_KNOWN_HOSTS`
+- `MINI_DEPLOY_HOST` recommended: `100.105.238.17`
+- `MINI_DEPLOY_USER` recommended: `agent-playground`
+
+The self-hosted deploy workflow does not require SSH deploy secrets.
+`MINI_DEPLOY_SSH_KEY` and `MINI_DEPLOY_KNOWN_HOSTS` can be removed later if you fully commit to the self-hosted runner transport.
 
 ## Deploy Transport Prerequisite
 
-The checked-in deploy workflow currently uses direct SSH from GitHub Actions to the mini.
+The checked-in deploy workflow is intended to run on a dedicated self-hosted runner on the mini with label `meeseeks-box-mini-deploy`.
 
-That means one of these must be true before enabling automatic deploy:
+Recommended runner properties:
 
-1. the mini is reachable from the GitHub-hosted runner over the configured SSH path, or
-2. the deploy workflow is moved to a self-hosted runner with Tailnet access, or
-3. the workflow is replaced with a mini-local agent dispatch path that runs the same deploy script
+1. host: `JDs-Mac-mini`
+2. user: `agent-playground`
+3. labels:
+   - `self-hosted`
+   - `macOS`
+   - `meeseeks-box-mini-deploy`
+4. checkout/work directory stays under `/Users/agent-playground`
 
-If the mini remains Tailnet-only and unreachable from GitHub-hosted runners, do not enable the current SSH-based deploy workflow unchanged.
+Because this repository is public, keep the self-hosted runner narrowly scoped to merge-to-main deploy jobs only. Do not add self-hosted labels to PR workflows.
 
 ## launchd Service
 
@@ -162,6 +167,20 @@ cp ops/launchd/com.jd.meeseeks-box.plist.example ~/Library/LaunchAgents/com.jd.m
 launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.jd.meeseeks-box.plist
 launchctl kickstart -k gui/$(id -u)/com.jd.meeseeks-box
 ```
+
+## Self-Hosted Runner Setup
+
+Recommended runner install path on the mini:
+
+- `/Users/agent-playground/actions-runner/meeseeks-box-deploy`
+
+Recommended runner labels:
+
+- `self-hosted`
+- `macOS`
+- `meeseeks-box-mini-deploy`
+
+The runner should be registered to the repository, not globally, and should be used only by [deploy-mac-mini.yml](/Users/jdfetterly/Ops/meeseeks-box-main/.github/workflows/deploy-mac-mini.yml).
 
 ## Deploy Script
 
