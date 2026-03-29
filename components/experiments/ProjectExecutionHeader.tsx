@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { OpenChatPanelButton } from '@/components/chat-panel/OpenChatPanelButton';
 import type { ProjectDetailRecord } from '@/lib/projects/service';
 import type { ShellVariant } from '@/lib/experiments/shell-variants';
 import { describeShellVariant } from '@/lib/experiments/shell-variants';
@@ -23,7 +22,7 @@ export function ProjectExecutionHeader({
           </div>
           <h1 style={titleStyle}>{detail.project.title}</h1>
           <p style={subtitleStyle}>
-            {detail.project.summary ?? detail.project.currentFocus ?? 'No project summary yet.'}
+            {detail.project.summary ?? detail.project.currentFocus ?? variantMeta.summary}
           </p>
         </div>
 
@@ -33,22 +32,9 @@ export function ProjectExecutionHeader({
           <StatPill label="Review" value={String(detail.summary.reviewCount)} />
           <StatPill label="Attention" value={String(detail.summary.openAttentionCount)} />
         </div>
-
-        <p style={variantSummaryStyle}>{variantMeta.summary}</p>
       </div>
 
       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
-        <OpenChatPanelButton
-          label="Ask Assistant"
-          intent="project_planning"
-          context={{
-            entityType: 'project',
-            entityId: detail.project.id,
-            projectId: detail.project.id,
-            page: 'lab-project',
-            suggestedPrompt: detail.summary.suggestedPrompt,
-          }}
-        />
         <Link href={`/projects/${detail.project.id}`} style={linkChipStyle}>
           Control project
         </Link>
@@ -118,13 +104,6 @@ const pillStyle = {
   border: '1px solid var(--separator)',
   background: 'var(--material-thin)',
   fontSize: '0.86rem',
-};
-
-const variantSummaryStyle = {
-  margin: 0,
-  color: 'var(--text-tertiary)',
-  fontSize: '0.92rem',
-  maxWidth: '74ch',
 };
 
 const linkChipStyle = {

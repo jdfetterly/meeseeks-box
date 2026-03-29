@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { OpenChatPanelButton } from '@/components/chat-panel/OpenChatPanelButton';
 import type { WorkBoardLane } from '@/lib/work-board/service';
 import type { ProjectShellView } from '@/lib/experiments/shell-variants';
 
@@ -19,12 +20,29 @@ export function BoardExecutionSurface({
   view,
   currentPlanTitle,
   lanes,
+  projectId,
+  projectTitle,
+  suggestedPrompt,
+  workspacePath,
+  linkedRepos,
+  starterSpecId,
 }: {
   basePath: string;
   view: ProjectShellView;
   currentPlanTitle: string | null;
   lanes: WorkBoardLane[];
+  projectId: string;
+  projectTitle: string;
+  suggestedPrompt: string;
+  workspacePath: string | null;
+  linkedRepos: string[];
+  starterSpecId?: string | null;
 }) {
+  const todoCount = lanes.find((lane) => lane.lane === 'todo')?.cards.length ?? 0;
+  const recommendedMove = todoCount > 0
+    ? 'Select the next reviewable card from To Do and steer it from the same shell.'
+    : 'No queued cards are visible. Use the board or Assistant to create the next reviewable slice.';
+
   return (
     <section style={panelStyle}>
       <div style={headerStyle}>
@@ -35,8 +53,8 @@ export function BoardExecutionSurface({
           </h2>
           <p style={panelBodyStyle}>
             {view === 'plan'
-              ? `Current plan${currentPlanTitle ? `: ${currentPlanTitle}` : ''}. Use the board as execution state layered onto the plan, not as manual launch admin.`
-              : 'Traditional lanes remain available as a secondary read of the same cards.'}
+              ? `Current plan${currentPlanTitle ? `: ${currentPlanTitle}` : ''}. Keep the board focused on plan-derived execution, not setup admin.`
+              : 'Status view is still available, but it stays secondary to the plan-first board.'}
           </p>
         </div>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -47,6 +65,43 @@ export function BoardExecutionSurface({
             Status view
           </Link>
         </div>
+      </div>
+
+      <div style={calloutStyle}>
+        <strong style={calloutLabelStyle}>Recommended next move</strong>
+        <span>{recommendedMove}</span>
+      </div>
+
+      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        <OpenChatPanelButton
+          label="Plan with Assistant"
+          intent="project_planning"
+          context={{
+            entityType: 'project',
+            entityId: projectId,
+            projectId,
+            page: 'lab-project',
+            suggestedPrompt,
+          }}
+        />
+        <OpenChatPanelButton
+          label={currentPlanTitle ? 'Turn plan into cards' : 'Draft current plan'}
+          intent={currentPlanTitle ? 'spec_decomposition' : 'spec_planning'}
+          context={{
+            entityType: 'project',
+            entityId: projectId,
+            projectId,
+            page: 'lab-project',
+            suggestedPrompt: currentPlanTitle
+              ? `Turn the current plan for ${projectTitle} into small reviewable cards.`
+              : `Draft the current plan for ${projectTitle}.`,
+            starterSpecId: starterSpecId ?? null,
+            starterSpecTitle: currentPlanTitle,
+            starterWorkspacePath: workspacePath,
+            starterRepoList: linkedRepos,
+          }}
+          variant="outline"
+        />
       </div>
 
       <div style={laneGridStyle}>
@@ -124,6 +179,23 @@ const panelBodyStyle = {
   color: 'var(--text-secondary)',
   fontSize: '0.95rem',
   maxWidth: '70ch',
+};
+
+const calloutStyle = {
+  display: 'grid',
+  gap: '6px',
+  borderRadius: '18px',
+  border: '1px solid color-mix(in srgb, var(--accent) 18%, transparent)',
+  background: 'color-mix(in srgb, var(--accent) 10%, transparent)',
+  padding: '14px 16px',
+  color: 'var(--text-primary)',
+};
+
+const calloutLabelStyle = {
+  fontSize: '0.82rem',
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase' as const,
+  color: 'var(--text-quaternary)',
 };
 
 const laneGridStyle = {
