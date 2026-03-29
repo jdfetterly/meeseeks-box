@@ -1,9 +1,15 @@
 import Link from 'next/link';
 import { OpenChatPanelButton } from '@/components/chat-panel/OpenChatPanelButton';
+import { ActiveWorkPane } from '@/components/experiments/ActiveWorkPane';
+import { AssistantWorkspacePanel } from '@/components/experiments/AssistantWorkspacePanel';
+import { MemoryContextRail } from '@/components/experiments/MemoryContextRail';
+import { ReviewPreviewPanel } from '@/components/experiments/ReviewPreviewPanel';
+import { StandingWorkPreviewPanel } from '@/components/experiments/StandingWorkPreviewPanel';
 import { DraftActions } from '@/components/work/DraftActions';
 import { LaunchComposer } from '@/components/work/LaunchComposer';
 import { RecommendedJobsPanel } from '@/components/work/RecommendedJobsPanel';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getProjectShellModel } from '@/lib/experiments/project-shell';
 import { listCanonicalLaunchDrafts } from '@/lib/launch/service';
 import { listProjectContextSummaries } from '@/lib/projects/service';
 import { listConversations, listSavedLaunchPresets } from '@/lib/product-state/repositories';
@@ -40,14 +46,21 @@ function tabLabel(value: 'board' | 'drafts' | 'jobs') {
 export default async function WorkPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ tab?: string; mode?: string; projectId?: string }>;
+  searchParams?: Promise<{ tab?: string; mode?: string; projectId?: string; card?: string }>;
 }) {
   const params = (await searchParams) ?? {};
   const activeTab = TAB_VALUES.has(params.tab ?? '') ? (params.tab as 'board' | 'drafts' | 'jobs') : 'board';
   const activeMode = MODE_VALUES.has(params.mode ?? '') ? (params.mode as 'project' | 'status') : 'project';
   const projectId = typeof params.projectId === 'string' ? params.projectId : null;
+  const activeCardId = typeof params.card === 'string' ? params.card : null;
 
   const lanes = listBoardLanes({ mode: activeMode, projectId });
+  const projectShell = projectId
+    ? getProjectShellModel(projectId, {
+        view: activeMode === 'status' ? 'status' : 'plan',
+        cardId: activeCardId,
+      })
+    : null;
   const drafts = listCanonicalLaunchDrafts();
   const recommendedJobs = listRecommendedJobInstallations();
   const savedPresets = listSavedLaunchPresets();
@@ -57,7 +70,23 @@ export default async function WorkPage({
 
   const cardCount = lanes.reduce((sum, lane) => sum + lane.cards.length, 0);
   const inReviewCount = lanes.find((lane) => lane.lane === 'in_review')?.cards.length ?? 0;
-  const activeProjectTitle = projectId ? getBoardProjectLabel(projectId) : 'All projects';
+  const activeProjectTitle = projectShell?.projectDetail.project.title ?? (projectId ? getBoardProjectLabel(projectId) : 'All projects');
+  const projectShellTodoCount = projectShell?.lanes.find((lane) => lane.lane === 'todo')?.cards.length ?? 0;
+  const projectShellRecommendedMove = projectShellTodoCount > 0
+    ? 'Select the next reviewable card from To Do and steer it from the same route.'
+    : projectShell?.projectDetail.summary.suggestedPrompt ?? 'Use Assistant to define the next reviewable slice.';
+  const projectBoardLink = formatQuery([
+    ['projectId', projectId],
+    ['mode', activeMode === 'project' ? null : activeMode],
+  ]);
+
+  function boardCardHref(cardId: string) {
+    return formatQuery([
+      ['projectId', projectId],
+      ['mode', activeMode === 'project' ? null : activeMode],
+      ['card', cardId],
+    ]);
+  }
 
   return (
     <div className="h-full overflow-y-auto" style={{ background: 'transparent' }}>
@@ -206,78 +235,233 @@ export default async function WorkPage({
                 </CardContent>
               </Card>
 
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-                  gap: 'var(--space-3)',
-                }}
-              >
-                {lanes.map(({ lane, title, cards }) => (
-                  <section key={lane} style={laneStyle}>
-                    <div style={laneHeaderStyle}>
-                      <div>
-                        <h2 style={laneTitleStyle}>{title}</h2>
-                        <p style={laneMetaStyle}>{cards.length} active</p>
+              {projectShell ? (
+                <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
+                  <Card className="border-white/8 bg-white/[0.035] py-4">
+                    <CardContent style={{ display: 'grid', gap: '16px' }}>
+                      <div style={{ display: 'grid', gap: '8px' }}>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          <span style={projectShellTagStyle}>Project-context shell</span>
+                          <StatPill label="Workspace" value={projectShell.projectDetail.summary.workspaceStatus.replaceAll('_', ' ')} />
+                          <StatPill label="Review" value={String(projectShell.projectDetail.summary.reviewCount)} />
+                          <StatPill label="Attention" value={String(projectShell.projectDetail.summary.openAttentionCount)} />
+                        </div>
+                        <div style={{ display: 'grid', gap: '4px' }}>
+                          <h2 style={projectShellTitleStyle}>
+                            {projectShell.currentPlan?.spec.title ?? `Move ${activeProjectTitle} forward`}
+                          </h2>
+                          <p style={subtitleStyle}>
+                            {projectShell.currentPlan?.spec.outcome ??
+                              projectShell.projectDetail.project.currentFocus ??
+                              projectShell.projectDetail.project.summary}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                    <div style={{ display: 'grid', gap: '10px' }}>
-                      {cards.length === 0 ? (
-                        <div style={emptyLaneStyle}>Nothing waiting here.</div>
-                      ) : (
-                        cards.map((card) => (
-                          <Link key={card.workItemId} href={`/work/${card.workItemId}`} style={boardCardStyle}>
-                            <div style={{ display: 'grid', gap: '8px' }}>
-                              <div style={{ display: 'grid', gap: '4px' }}>
-                                <strong style={{ fontSize: '0.98rem', lineHeight: 1.25 }}>{card.title}</strong>
-                                <span style={mutedMetaStyle}>
-                                  {card.projectTitle ?? 'Unassigned project'}
-                                  {card.parentSpecTitle ? ` • Plan: ${card.parentSpecTitle}` : ''}
-                                </span>
+
+                      <div style={projectCalloutStyle}>
+                        <strong style={{ color: 'var(--text-primary)' }}>Recommended next move</strong>
+                        <p style={{ margin: 0, color: 'var(--text-secondary)' }}>{projectShellRecommendedMove}</p>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                        <OpenChatPanelButton
+                          label="Plan with Assistant"
+                          intent="project_planning"
+                          context={{
+                            entityType: 'project',
+                            entityId: projectShell.projectDetail.project.id,
+                            projectId: projectShell.projectDetail.project.id,
+                            page: 'board',
+                            suggestedPrompt: projectShell.projectDetail.summary.suggestedPrompt,
+                          }}
+                        />
+                        <OpenChatPanelButton
+                          label={projectShell.currentPlan ? 'Turn plan into cards' : 'Draft current plan'}
+                          intent={projectShell.currentPlan ? 'spec_decomposition' : 'spec_planning'}
+                          context={{
+                            entityType: 'project',
+                            entityId: projectShell.projectDetail.project.id,
+                            projectId: projectShell.projectDetail.project.id,
+                            page: 'board',
+                            suggestedPrompt: projectShell.currentPlan
+                              ? `Turn the current plan for ${activeProjectTitle} into small reviewable cards.`
+                              : `Draft the current plan for ${activeProjectTitle}.`,
+                            starterSpecId: projectShell.currentPlan?.spec.id ?? null,
+                            starterSpecTitle: projectShell.currentPlan?.spec.title ?? null,
+                            starterWorkspacePath: projectShell.projectDetail.workspace?.workspacePath ?? null,
+                            starterRepoList: projectShell.projectDetail.project.linkedRepos,
+                          }}
+                          variant="outline"
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <div style={projectShellGridStyle}>
+                    <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                          gap: 'var(--space-3)',
+                        }}
+                      >
+                        {projectShell.lanes.map(({ lane, title, cards }) => (
+                          <section key={lane} style={laneStyle}>
+                            <div style={laneHeaderStyle}>
+                              <div>
+                                <h2 style={laneTitleStyle}>{title}</h2>
+                                <p style={laneMetaStyle}>{cards.length} active</p>
                               </div>
-
-                              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                <span style={detailPillStyle}>
-                                  {card.delegatedAgentId ?? card.scope}
-                                </span>
-                                {card.scheduleTime ? (
-                                  <span style={detailPillStyle}>next {formatScheduleTime(card.scheduleTime)}</span>
-                                ) : null}
-                                {card.latestEventType ? (
-                                  <span style={detailPillStyle}>{card.latestEventType.replaceAll('_', ' ')}</span>
-                                ) : null}
-                              </div>
-
-                              {card.sourceConversationId ? (
-                                <span style={conversationMetaStyle}>
-                                  {conversationsById.get(card.sourceConversationId)?.title ?? 'Linked conversation'}
-                                </span>
-                              ) : null}
-
-                              {card.operationalBadges.length > 0 ? (
-                                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                                  {card.operationalBadges.map((badge) => (
-                                    <span key={badge} style={warningPillStyle}>
-                                      {badge.replaceAll('_', ' ')}
-                                    </span>
-                                  ))}
-                                </div>
-                              ) : null}
                             </div>
-                          </Link>
-                        ))
-                      )}
-                    </div>
-                  </section>
-                ))}
-              </div>
+                            <div style={{ display: 'grid', gap: '10px' }}>
+                              {cards.length === 0 ? (
+                                <div style={emptyLaneStyle}>Nothing waiting here.</div>
+                              ) : (
+                                cards.map((card) => (
+                                  <Link key={card.workItemId} href={boardCardHref(card.workItemId)} style={boardCardStyle}>
+                                    <div style={{ display: 'grid', gap: '8px' }}>
+                                      <div style={{ display: 'grid', gap: '4px' }}>
+                                        <strong style={{ fontSize: '0.98rem', lineHeight: 1.25 }}>{card.title}</strong>
+                                        <span style={mutedMetaStyle}>
+                                          {card.projectTitle ?? 'Unassigned project'}
+                                          {card.parentSpecTitle ? ` • Plan: ${card.parentSpecTitle}` : ''}
+                                        </span>
+                                      </div>
 
-              <details style={manualDetailsStyle}>
-                <summary style={manualSummaryStyle}>Manual launch fallback</summary>
-                <div style={{ marginTop: '12px' }}>
-                  <LaunchComposer presets={savedPresets} />
+                                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                        <span style={detailPillStyle}>
+                                          {card.delegatedAgentId ?? card.scope}
+                                        </span>
+                                        {card.scheduleTime ? (
+                                          <span style={detailPillStyle}>next {formatScheduleTime(card.scheduleTime)}</span>
+                                        ) : null}
+                                        {card.latestEventType ? (
+                                          <span style={detailPillStyle}>{card.latestEventType.replaceAll('_', ' ')}</span>
+                                        ) : null}
+                                      </div>
+
+                                      {card.sourceConversationId ? (
+                                        <span style={conversationMetaStyle}>
+                                          {conversationsById.get(card.sourceConversationId)?.title ?? 'Linked conversation'}
+                                        </span>
+                                      ) : null}
+
+                                      {card.operationalBadges.length > 0 ? (
+                                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                          {card.operationalBadges.map((badge) => (
+                                            <span key={badge} style={warningPillStyle}>
+                                              {badge.replaceAll('_', ' ')}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      ) : null}
+                                    </div>
+                                  </Link>
+                                ))
+                              )}
+                            </div>
+                          </section>
+                        ))}
+                      </div>
+
+                      <details style={manualDetailsStyle}>
+                        <summary style={manualSummaryStyle}>Manual launch fallback</summary>
+                        <div style={{ marginTop: '12px' }}>
+                          <LaunchComposer presets={savedPresets} />
+                        </div>
+                      </details>
+                    </div>
+
+                    <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
+                      <ActiveWorkPane activeWork={projectShell.activeWork} />
+                      <AssistantWorkspacePanel detail={projectShell.projectDetail} currentPlan={projectShell.currentPlan} compact />
+                      <MemoryContextRail detail={projectShell.projectDetail} compact />
+                      <StandingWorkPreviewPanel lanes={projectShell.lanes} projectId={projectShell.projectDetail.project.id} />
+                      <ReviewPreviewPanel reviewEntries={projectShell.reviewEntries} projectId={projectShell.projectDetail.project.id} />
+                      <Link href={`/projects/${projectShell.projectDetail.project.id}`} style={projectShellLinkCardStyle}>
+                        <strong>Open project detail</strong>
+                        <span style={mutedMetaStyle}>Return to project context without losing the board as the main execution surface.</span>
+                      </Link>
+                    </div>
+                  </div>
                 </div>
-              </details>
+              ) : (
+                <>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                      gap: 'var(--space-3)',
+                    }}
+                  >
+                    {lanes.map(({ lane, title, cards }) => (
+                      <section key={lane} style={laneStyle}>
+                        <div style={laneHeaderStyle}>
+                          <div>
+                            <h2 style={laneTitleStyle}>{title}</h2>
+                            <p style={laneMetaStyle}>{cards.length} active</p>
+                          </div>
+                        </div>
+                        <div style={{ display: 'grid', gap: '10px' }}>
+                          {cards.length === 0 ? (
+                            <div style={emptyLaneStyle}>Nothing waiting here.</div>
+                          ) : (
+                            cards.map((card) => (
+                              <Link key={card.workItemId} href={`/work/${card.workItemId}`} style={boardCardStyle}>
+                                <div style={{ display: 'grid', gap: '8px' }}>
+                                  <div style={{ display: 'grid', gap: '4px' }}>
+                                    <strong style={{ fontSize: '0.98rem', lineHeight: 1.25 }}>{card.title}</strong>
+                                    <span style={mutedMetaStyle}>
+                                      {card.projectTitle ?? 'Unassigned project'}
+                                      {card.parentSpecTitle ? ` • Plan: ${card.parentSpecTitle}` : ''}
+                                    </span>
+                                  </div>
+
+                                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                    <span style={detailPillStyle}>
+                                      {card.delegatedAgentId ?? card.scope}
+                                    </span>
+                                    {card.scheduleTime ? (
+                                      <span style={detailPillStyle}>next {formatScheduleTime(card.scheduleTime)}</span>
+                                    ) : null}
+                                    {card.latestEventType ? (
+                                      <span style={detailPillStyle}>{card.latestEventType.replaceAll('_', ' ')}</span>
+                                    ) : null}
+                                  </div>
+
+                                  {card.sourceConversationId ? (
+                                    <span style={conversationMetaStyle}>
+                                      {conversationsById.get(card.sourceConversationId)?.title ?? 'Linked conversation'}
+                                    </span>
+                                  ) : null}
+
+                                  {card.operationalBadges.length > 0 ? (
+                                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                      {card.operationalBadges.map((badge) => (
+                                        <span key={badge} style={warningPillStyle}>
+                                          {badge.replaceAll('_', ' ')}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  ) : null}
+                                </div>
+                              </Link>
+                            ))
+                          )}
+                        </div>
+                      </section>
+                    ))}
+                  </div>
+
+                  <details style={manualDetailsStyle}>
+                    <summary style={manualSummaryStyle}>Manual launch fallback</summary>
+                    <div style={{ marginTop: '12px' }}>
+                      <LaunchComposer presets={savedPresets} />
+                    </div>
+                  </details>
+                </>
+              )}
             </>
           ) : null}
 
@@ -420,6 +604,54 @@ const statPillStyle = {
   alignItems: 'center',
   gap: '8px',
   fontSize: '0.84rem',
+};
+
+const projectShellTagStyle = {
+  minHeight: '32px',
+  padding: '0 12px',
+  borderRadius: '999px',
+  border: '1px solid rgba(255,122,89,0.28)',
+  background: 'rgba(255,122,89,0.14)',
+  color: 'var(--text-primary)',
+  display: 'inline-flex',
+  alignItems: 'center',
+  fontSize: '0.82rem',
+  fontWeight: 700,
+};
+
+const projectShellTitleStyle = {
+  margin: 0,
+  fontSize: '1.35rem',
+  lineHeight: 1.08,
+  letterSpacing: '-0.03em',
+  color: 'var(--text-primary)',
+};
+
+const projectCalloutStyle = {
+  display: 'grid',
+  gap: '6px',
+  borderRadius: '18px',
+  border: '1px solid rgba(255,122,89,0.2)',
+  background: 'rgba(255,122,89,0.08)',
+  padding: '16px',
+};
+
+const projectShellGridStyle = {
+  display: 'grid',
+  gridTemplateColumns: 'minmax(0, 1.3fr) minmax(320px, 0.84fr)',
+  gap: 'var(--space-3)',
+  alignItems: 'start',
+};
+
+const projectShellLinkCardStyle = {
+  border: '1px solid rgba(255,255,255,0.07)',
+  borderRadius: '18px',
+  padding: '16px',
+  background: 'rgba(255,255,255,0.025)',
+  textDecoration: 'none',
+  color: 'inherit',
+  display: 'grid',
+  gap: '6px',
 };
 
 function toolbarLinkStyle(active: boolean) {

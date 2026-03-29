@@ -1,12 +1,17 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { OpenChatPanelButton } from '@/components/chat-panel/OpenChatPanelButton';
+import { AssistantWorkspacePanel } from '@/components/experiments/AssistantWorkspacePanel';
+import { MemoryContextRail } from '@/components/experiments/MemoryContextRail';
+import { ReviewPreviewPanel } from '@/components/experiments/ReviewPreviewPanel';
+import { StandingWorkPreviewPanel } from '@/components/experiments/StandingWorkPreviewPanel';
 import { ProjectPlaybookForm } from '@/components/projects/ProjectPlaybookForm';
 import { ProjectProfileForm } from '@/components/projects/ProjectProfileForm';
 import { ProjectSuggestionActions } from '@/components/projects/ProjectSuggestionActions';
 import { ProjectWorkspaceManager } from '@/components/projects/ProjectWorkspaceManager';
 import { ProjectSpecsManager } from '@/components/projects/ProjectSpecsManager';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { getProjectShellModel } from '@/lib/experiments/project-shell';
 import { formatConversationStatus, listConversationOverviews } from '@/lib/conversations/service';
 import { deriveDefaultWorkspacePath, getProjectDetail } from '@/lib/projects/service';
 import { listOpenLoops } from '@/lib/product-state/repositories';
@@ -28,6 +33,7 @@ export default async function ProjectDetailPage({
 
   const suggestedWorkspacePath = workspace.workspace?.workspacePath ?? deriveDefaultWorkspacePath(workspace.project);
   const specs = listProjectSpecDetails(workspace.project.id);
+  const shellModel = getProjectShellModel(workspace.project.id, { view: 'plan' });
   const openLoops = listOpenLoops({ projectId: workspace.project.id, status: 'open' });
   const projectConversations = listConversationOverviews().filter(
     (overview) => overview.conversation.projectId === workspace.project.id,
@@ -57,10 +63,17 @@ export default async function ProjectDetailPage({
             }}
           >
             <div style={{ display: 'grid', gap: '8px' }}>
+              <p style={eyebrowStyle}>Project control plane</p>
               <h1 style={headlineStyle}>{workspace.project.title}</h1>
               <p style={ledeStyle}>
                 {workspace.project.summary ?? workspace.project.currentFocus ?? 'No project summary yet.'}
               </p>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <StatPill label="Workspace" value={workspace.summary.workspaceStatus.replaceAll('_', ' ')} />
+                <StatPill label="Cards" value={String(workspace.summary.workCount)} />
+                <StatPill label="Review" value={String(workspace.summary.reviewCount)} />
+                <StatPill label="Attention" value={String(workspace.summary.openAttentionCount)} />
+              </div>
             </div>
             <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
               <OpenChatPanelButton
@@ -77,100 +90,105 @@ export default async function ProjectDetailPage({
               <Link href={`/work?projectId=${workspace.project.id}`} style={linkChipStyle}>
                 Open board
               </Link>
+              <Link href="/review" style={linkChipStyle}>
+                Open Review Queue
+              </Link>
             </div>
           </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Current plan</CardTitle>
-              <CardDescription>One plan in focus. Refine it here, then derive work from it.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ProjectSpecsManager
-                projectId={workspace.project.id}
-                projectTitle={workspace.project.title}
-                linkedRepos={workspace.project.linkedRepos}
-                workspacePath={workspace.workspace?.workspacePath ?? null}
-                specs={specs}
-              />
-            </CardContent>
-          </Card>
 
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gridTemplateColumns: 'minmax(0, 1.3fr) minmax(320px, 0.84fr)',
               gap: 'var(--space-4)',
+              alignItems: 'start',
             }}
           >
-            <Card>
-              <CardHeader>
-                <CardTitle>Recommended next move</CardTitle>
-                <CardDescription>Start here.</CardDescription>
-              </CardHeader>
-              <CardContent style={{ display: 'grid', gap: 'var(--space-3)' }}>
-                <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
-                  {recommendedNextMove}
-                </p>
-                <OpenChatPanelButton
-                  label="Work this through Assistant"
-                  intent="general_chat"
-                  context={{
-                    entityType: 'project',
-                    entityId: workspace.project.id,
-                    projectId: workspace.project.id,
-                    page: 'project',
-                    suggestedPrompt: recommendedNextMove,
-                  }}
-                />
-              </CardContent>
-            </Card>
+            <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Current plan</CardTitle>
+                  <CardDescription>One plan in focus. Refine it here, then derive work from it.</CardDescription>
+                </CardHeader>
+                <CardContent style={{ display: 'grid', gap: 'var(--space-4)' }}>
+                  <div style={projectCalloutStyle}>
+                    <strong style={{ color: 'var(--text-primary)' }}>Recommended next move</strong>
+                    <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
+                      {recommendedNextMove}
+                    </p>
+                  </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Open loops</CardTitle>
-                <CardDescription>What is still unresolved.</CardDescription>
-              </CardHeader>
-              <CardContent style={{ display: 'grid', gap: 'var(--space-3)' }}>
-                {openLoops.length === 0 ? (
-                  <p style={{ margin: 0, color: 'var(--text-tertiary)' }}>
-                    No blocking open loops are active right now.
-                  </p>
-                ) : (
-                  openLoops.map((loop) => (
-                    <div key={loop.id} style={listRowStyle}>
-                      <strong>{loop.title}</strong>
-                      <span style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
-                        {loop.priority} priority • waiting on {loop.waitingOn}
-                      </span>
-                    </div>
-                  ))
-                )}
-              </CardContent>
-            </Card>
+                  <ProjectSpecsManager
+                    projectId={workspace.project.id}
+                    projectTitle={workspace.project.title}
+                    linkedRepos={workspace.project.linkedRepos}
+                    workspacePath={workspace.workspace?.workspacePath ?? null}
+                    specs={specs}
+                  />
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Continue conversations</CardTitle>
-                <CardDescription>Saved context that still matters.</CardDescription>
-              </CardHeader>
-              <CardContent style={{ display: 'grid', gap: 'var(--space-3)' }}>
-                {projectConversations.length === 0 ? (
-                  <p style={{ margin: 0, color: 'var(--text-tertiary)' }}>
-                    No saved conversation context yet.
-                  </p>
-                ) : (
-                  projectConversations.map((overview) => (
-                    <Link key={overview.conversation.id} href={`/chat/${overview.conversation.id}`} style={listRowStyle}>
-                      <strong>{overview.conversation.title ?? 'Untitled conversation'}</strong>
-                      <span style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
-                        {formatConversationStatus(overview.conversation.status)}
-                      </span>
-                    </Link>
-                  ))
-                )}
-              </CardContent>
-            </Card>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                  gap: 'var(--space-4)',
+                }}
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Open loops</CardTitle>
+                    <CardDescription>What is still unresolved.</CardDescription>
+                  </CardHeader>
+                  <CardContent style={{ display: 'grid', gap: 'var(--space-3)' }}>
+                    {openLoops.length === 0 ? (
+                      <p style={{ margin: 0, color: 'var(--text-tertiary)' }}>
+                        No blocking open loops are active right now.
+                      </p>
+                    ) : (
+                      openLoops.map((loop) => (
+                        <div key={loop.id} style={listRowStyle}>
+                          <strong>{loop.title}</strong>
+                          <span style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
+                            {loop.priority} priority • waiting on {loop.waitingOn}
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Continue conversations</CardTitle>
+                    <CardDescription>Saved context that still matters.</CardDescription>
+                  </CardHeader>
+                  <CardContent style={{ display: 'grid', gap: 'var(--space-3)' }}>
+                    {projectConversations.length === 0 ? (
+                      <p style={{ margin: 0, color: 'var(--text-tertiary)' }}>
+                        No saved conversation context yet.
+                      </p>
+                    ) : (
+                      projectConversations.map((overview) => (
+                        <Link key={overview.conversation.id} href={`/chat/${overview.conversation.id}`} style={listRowStyle}>
+                          <strong>{overview.conversation.title ?? 'Untitled conversation'}</strong>
+                          <span style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
+                            {formatConversationStatus(overview.conversation.status)}
+                          </span>
+                        </Link>
+                      ))
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
+              <AssistantWorkspacePanel detail={workspace} currentPlan={shellModel?.currentPlan ?? null} />
+              <MemoryContextRail detail={workspace} />
+              <StandingWorkPreviewPanel lanes={shellModel?.lanes ?? []} projectId={workspace.project.id} />
+              <ReviewPreviewPanel reviewEntries={shellModel?.reviewEntries ?? []} projectId={workspace.project.id} />
+            </div>
           </div>
 
           <details
@@ -385,6 +403,37 @@ const linkChipStyle = {
   display: 'inline-flex',
   alignItems: 'center',
   textDecoration: 'none',
+};
+
+function StatPill({ label, value }: { label: string; value: string }) {
+  return (
+    <span style={statPillStyle}>
+      <strong style={{ color: 'var(--text-primary)' }}>{value}</strong>
+      <span>{label}</span>
+    </span>
+  );
+}
+
+const statPillStyle = {
+  minHeight: '32px',
+  padding: '0 12px',
+  borderRadius: '999px',
+  border: '1px solid rgba(255,255,255,0.07)',
+  background: 'rgba(255,255,255,0.03)',
+  color: 'var(--text-tertiary)',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '8px',
+  fontSize: '0.84rem',
+};
+
+const projectCalloutStyle = {
+  display: 'grid',
+  gap: '6px',
+  borderRadius: '18px',
+  border: '1px solid rgba(255,122,89,0.2)',
+  background: 'rgba(255,122,89,0.08)',
+  padding: '16px',
 };
 
 const listRowStyle = {
