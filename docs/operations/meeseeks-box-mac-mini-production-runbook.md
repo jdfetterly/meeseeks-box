@@ -81,12 +81,13 @@ git fetch origin
 git checkout main
 ```
 
-On the mini production checkout:
+On the mini production checkout, prefer an HTTPS clone for the public repository unless you have already configured GitHub SSH trust on the mini:
 
 ```bash
-cd /Users/agent-playground/code/repos/meeseeks-box
-git remote add origin git@github.com:jdfetterly/meeseeks-box.git
-git fetch origin
+mkdir -p /Users/agent-playground/code/repos
+cd /Users/agent-playground/code/repos
+git clone https://github.com/jdfetterly/meeseeks-box.git meeseeks-box
+cd meeseeks-box
 git checkout main
 ```
 

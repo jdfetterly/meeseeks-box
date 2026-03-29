@@ -107,7 +107,7 @@ Recommended on the mini:
 1. Production checkout:
    - `/Users/agent-playground/code/repos/meeseeks-box`
 2. Development worktrees or clones:
-   - `/Users/agent-playground/code/workspaces/meeseeks-box-*`
+   - `/Users/agent-playground/code/worktrees/meeseeks-box`
 
 Do not develop in the production checkout.
 
