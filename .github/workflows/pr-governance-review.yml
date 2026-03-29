@@ -3,6 +3,8 @@ name: PR Governance Review
 on:
   pull_request_target:
     types: [opened, edited, synchronize, reopened, labeled, unlabeled, ready_for_review]
+  issue_comment:
+    types: [created, edited]
 
 permissions:
   contents: read
@@ -11,7 +13,9 @@ permissions:
 
 jobs:
   require-security-review:
-    if: github.event.pull_request.draft == false
+    if: |
+      (github.event_name == 'pull_request_target' && github.event.pull_request.draft == false) ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request != null)
     runs-on: ubuntu-latest
     steps:
       - name: Validate security review signal
@@ -35,10 +39,28 @@ jobs:
               return;
             }
 
-            const pr = context.payload.pull_request;
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const prNumber = pr.number;
+            let pr;
+            let prNumber;
+
+            if (context.eventName === "pull_request_target") {
+              pr = context.payload.pull_request;
+              prNumber = pr.number;
+            } else {
+              prNumber = context.payload.issue.number;
+              const response = await github.rest.pulls.get({
+                owner,
+                repo,
+                pull_number: prNumber,
+              });
+              pr = response.data;
+            }
+
+            if (pr.draft) {
+              core.info("Draft PR; skipping governance gate.");
+              return;
+            }
 
             const comments = await github.paginate(github.rest.issues.listComments, {
               owner,

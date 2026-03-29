@@ -166,9 +166,14 @@ The intended PR flow is:
 
 1. `PR Security Scan` runs on a GitHub-hosted runner for every non-draft PR update.
 2. If the scan passes, `PR Security Review Approval` posts or refreshes a SHA-bound approval comment as `jd-security-review`.
-3. `PR Governance Review` accepts that comment only when `PR_HEAD_SHA` matches the current PR head commit.
+3. `PR Governance Review` reruns on matching PR comment updates and accepts the approval only when `PR_HEAD_SHA` matches the current PR head commit.
 
 This keeps the merge step human-only while removing the need for manual security-comment entry on every PR revision.
+
+Bootstrap note:
+
+- The first PR that introduces `PR Security Review Approval` cannot approve itself automatically, because that secret-bearing workflow only becomes active after it lands on `main`.
+- Merge that bootstrap PR with a manual `jd-security-review` comment once, then future PRs can rely on the automated approval path.
 
 ## launchd Service
 
