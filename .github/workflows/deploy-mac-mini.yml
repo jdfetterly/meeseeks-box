@@ -1,0 +1,81 @@
+name: Deploy Mac Mini
+
+on:
+  workflow_run:
+    workflows: ["Main Push Policy"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-mac-mini-main
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate deploy configuration
+        shell: bash
+        env:
+          MINI_DEPLOY_HOST: ${{ vars.MINI_DEPLOY_HOST }}
+          MINI_DEPLOY_USER: ${{ vars.MINI_DEPLOY_USER }}
+          MINI_DEPLOY_REPO_PATH: ${{ vars.MINI_DEPLOY_REPO_PATH }}
+          MINI_DEPLOY_SERVICE_LABEL: ${{ vars.MINI_DEPLOY_SERVICE_LABEL }}
+          MINI_DEPLOY_HEALTHCHECK_URL: ${{ vars.MINI_DEPLOY_HEALTHCHECK_URL }}
+          MINI_DEPLOY_SSH_KEY: ${{ secrets.MINI_DEPLOY_SSH_KEY }}
+          MINI_DEPLOY_KNOWN_HOSTS: ${{ secrets.MINI_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          for name in \
+            MINI_DEPLOY_HOST \
+            MINI_DEPLOY_USER \
+            MINI_DEPLOY_REPO_PATH \
+            MINI_DEPLOY_SERVICE_LABEL \
+            MINI_DEPLOY_HEALTHCHECK_URL \
+            MINI_DEPLOY_SSH_KEY \
+            MINI_DEPLOY_KNOWN_HOSTS
+          do
+            if [ -z "${!name:-}" ]; then
+              echo "Missing required deploy setting: $name" >&2
+              exit 1
+            fi
+          done
+
+      - name: Install SSH material
+        shell: bash
+        env:
+          MINI_DEPLOY_SSH_KEY: ${{ secrets.MINI_DEPLOY_SSH_KEY }}
+          MINI_DEPLOY_KNOWN_HOSTS: ${{ secrets.MINI_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          install -m 700 -d "$RUNNER_TEMP/.ssh"
+          printf '%s\n' "$MINI_DEPLOY_SSH_KEY" > "$RUNNER_TEMP/.ssh/id_ed25519"
+          chmod 600 "$RUNNER_TEMP/.ssh/id_ed25519"
+          printf '%s\n' "$MINI_DEPLOY_KNOWN_HOSTS" > "$RUNNER_TEMP/.ssh/known_hosts"
+          chmod 600 "$RUNNER_TEMP/.ssh/known_hosts"
+
+      - name: Run mini deploy script
+        shell: bash
+        env:
+          MINI_DEPLOY_HOST: ${{ vars.MINI_DEPLOY_HOST }}
+          MINI_DEPLOY_USER: ${{ vars.MINI_DEPLOY_USER }}
+          MINI_DEPLOY_REPO_PATH: ${{ vars.MINI_DEPLOY_REPO_PATH }}
+          MINI_DEPLOY_SERVICE_LABEL: ${{ vars.MINI_DEPLOY_SERVICE_LABEL }}
+          MINI_DEPLOY_HEALTHCHECK_URL: ${{ vars.MINI_DEPLOY_HEALTHCHECK_URL }}
+          MINI_DEPLOY_SSH_PORT: ${{ vars.MINI_DEPLOY_SSH_PORT }}
+        run: |
+          set -euo pipefail
+          SSH_PORT="${MINI_DEPLOY_SSH_PORT:-22}"
+          ssh \
+            -i "$RUNNER_TEMP/.ssh/id_ed25519" \
+            -o UserKnownHostsFile="$RUNNER_TEMP/.ssh/known_hosts" \
+            -o StrictHostKeyChecking=yes \
+            -p "$SSH_PORT" \
+            "${MINI_DEPLOY_USER}@${MINI_DEPLOY_HOST}" \
+            "cd '${MINI_DEPLOY_REPO_PATH}' && bash ./scripts/deploy-mini.sh --repo-path '${MINI_DEPLOY_REPO_PATH}' --service-label '${MINI_DEPLOY_SERVICE_LABEL}' --healthcheck-url '${MINI_DEPLOY_HEALTHCHECK_URL}'"

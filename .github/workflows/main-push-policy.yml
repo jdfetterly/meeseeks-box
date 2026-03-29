@@ -1,0 +1,27 @@
+name: Main Push Policy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  enforce-main-push-policy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate push source policy
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          ALLOWED_MAIN_PUSH_ACTORS: ${{ vars.ALLOWED_MAIN_PUSH_ACTORS }}
+          DENIED_MAIN_PUSH_ACTORS: ${{ vars.DENIED_MAIN_PUSH_ACTORS }}
+          ALLOWED_SECURITY_REVIEW_ACTORS: ${{ vars.ALLOWED_SECURITY_REVIEW_ACTORS }}
+        run: |
+          python3 tools/main_push_policy_check.py

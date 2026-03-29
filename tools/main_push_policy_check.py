@@ -101,7 +101,7 @@ def main() -> int:
     token = os.environ.get("GITHUB_TOKEN", "")
     allowlist_raw = os.environ.get("ALLOWED_MAIN_PUSH_ACTORS", "jdfetterly,github-actions[bot]")
     denylist_raw = os.environ.get("DENIED_MAIN_PUSH_ACTORS", "openclaw-mini")
-    review_allowlist_raw = os.environ.get("ALLOWED_SECURITY_REVIEW_ACTORS", "jdfetterly")
+    review_allowlist_raw = os.environ.get("ALLOWED_SECURITY_REVIEW_ACTORS", "")
 
     if "/" not in repo_full or not sha or not actor or not token:
         print("error: missing required GitHub context env vars")
@@ -124,6 +124,10 @@ def main() -> int:
         pr_number = pulls[0].get("number")
 
     security_review_required = len(pulls) > 0
+    if security_review_required and not review_allowlist:
+        print("error: ALLOWED_SECURITY_REVIEW_ACTORS not configured")
+        return 1
+
     security_review_ok = False
     if security_review_required and isinstance(pr_number, int):
         try:
