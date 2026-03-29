@@ -20,7 +20,7 @@ export function AssistantWorkspacePanel({
     : 'Use Assistant to draft the first plan.';
 
   return (
-    <section style={panelStyle}>
+    <section style={compact ? { display: 'grid', gap: '12px' } : panelStyle}>
       <div style={{ display: 'grid', gap: '6px' }}>
         <div style={eyebrowStyle}>Assistant</div>
         <h2 style={panelTitleStyle}>{compact ? 'Secondary support' : 'Next move'}</h2>
@@ -60,24 +60,22 @@ export function AssistantWorkspacePanel({
               }}
               variant="outline"
             />
-            {compact ? null : (
-              <OpenChatPanelButton
-                label={workspaceReady ? 'Standing delegation' : 'Prepare workspace'}
-                intent={workspaceReady ? 'create_schedule' : 'project_planning'}
-                context={{
-                  entityType: 'project',
-                  entityId: detail.project.id,
-                  projectId: detail.project.id,
-                  page: 'lab-project',
-                  suggestedPrompt: workspaceReady
-                    ? `Create a standing delegated outcome for ${detail.project.title}.`
-                    : `This project needs a workspace before code execution. Help me bind or bootstrap it.`,
-                  workspaceAction: workspaceReady ? null : 'bind_existing',
-                  starterWorkspacePath: detail.workspace?.workspacePath ?? null,
-                }}
-                variant="outline"
-              />
-            )}
+            <OpenChatPanelButton
+              label={workspaceReady ? 'Standing delegation' : 'Prepare workspace'}
+              intent={workspaceReady ? 'create_schedule' : 'project_planning'}
+              context={{
+                entityType: 'project',
+                entityId: detail.project.id,
+                projectId: detail.project.id,
+                page: 'lab-project',
+                suggestedPrompt: workspaceReady
+                  ? `Create a standing delegated outcome for ${detail.project.title}.`
+                  : `This project needs a workspace before code execution. Help me bind or bootstrap it.`,
+                workspaceAction: workspaceReady ? null : 'bind_existing',
+                starterWorkspacePath: detail.workspace?.workspacePath ?? null,
+              }}
+              variant="outline"
+            />
           </div>
         </details>
       </div>
