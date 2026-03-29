@@ -1,0 +1,70 @@
+name: Deploy Mac Mini
+
+on:
+  workflow_run:
+    workflows: ["Main Push Policy"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-mac-mini-main
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on:
+      - self-hosted
+      - macOS
+      - meeseeks-box-mini-deploy
+    steps:
+      - name: Checkout merged main
+        uses: actions/checkout@v4
+
+      - name: Validate deploy configuration
+        shell: bash
+        env:
+          MINI_DEPLOY_REPO_PATH: ${{ vars.MINI_DEPLOY_REPO_PATH }}
+          MINI_DEPLOY_SERVICE_LABEL: ${{ vars.MINI_DEPLOY_SERVICE_LABEL }}
+          MINI_DEPLOY_HEALTHCHECK_URL: ${{ vars.MINI_DEPLOY_HEALTHCHECK_URL }}
+        run: |
+          set -euo pipefail
+          for name in \
+            MINI_DEPLOY_REPO_PATH \
+            MINI_DEPLOY_SERVICE_LABEL \
+            MINI_DEPLOY_HEALTHCHECK_URL
+          do
+            if [ -z "${!name:-}" ]; then
+              echo "Missing required deploy setting: $name" >&2
+              exit 1
+            fi
+          done
+
+      - name: Verify local runner checkout path
+        shell: bash
+        env:
+          MINI_DEPLOY_REPO_PATH: ${{ vars.MINI_DEPLOY_REPO_PATH }}
+        run: |
+          set -euo pipefail
+          if [ ! -d "${MINI_DEPLOY_REPO_PATH}" ]; then
+            echo "Missing production checkout: ${MINI_DEPLOY_REPO_PATH}" >&2
+            exit 1
+          fi
+
+      - name: Run local mini deploy script
+        shell: bash
+        env:
+          MINI_DEPLOY_REPO_PATH: ${{ vars.MINI_DEPLOY_REPO_PATH }}
+          MINI_DEPLOY_SERVICE_LABEL: ${{ vars.MINI_DEPLOY_SERVICE_LABEL }}
+          MINI_DEPLOY_HEALTHCHECK_URL: ${{ vars.MINI_DEPLOY_HEALTHCHECK_URL }}
+        run: |
+          set -euo pipefail
+          bash ./scripts/deploy-mini.sh \
+            --repo-path "${MINI_DEPLOY_REPO_PATH}" \
+            --service-label "${MINI_DEPLOY_SERVICE_LABEL}" \
+            --healthcheck-url "${MINI_DEPLOY_HEALTHCHECK_URL}"

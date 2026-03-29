@@ -5,10 +5,11 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import urllib.error
 import urllib.request
-from typing import List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 
 def parse_list(raw: str) -> set[str]:
@@ -17,19 +18,6 @@ def parse_list(raw: str) -> set[str]:
 
 def fetch_commit_pulls(owner: str, repo: str, sha: str, token: str) -> List[dict]:
     url = f"https://api.github.com/repos/{owner}/{repo}/commits/{sha}/pulls"
-    req = urllib.request.Request(
-        url,
-        headers={
-          "Authorization": f"Bearer {token}",
-          "Accept": "application/vnd.github+json",
-        },
-    )
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        return json.loads(resp.read().decode("utf-8", errors="replace"))
-
-
-def fetch_pr_reviews(owner: str, repo: str, pr_number: int, token: str) -> List[dict]:
-    url = f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}/reviews"
     req = urllib.request.Request(
         url,
         headers={
@@ -54,20 +42,42 @@ def fetch_issue_comments(owner: str, repo: str, pr_number: int, token: str) -> L
         return json.loads(resp.read().decode("utf-8", errors="replace"))
 
 
+def fetch_pr(owner: str, repo: str, pr_number: int, token: str) -> Dict[str, object]:
+    url = f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}"
+    req = urllib.request.Request(
+        url,
+        headers={
+          "Authorization": f"Bearer {token}",
+          "Accept": "application/vnd.github+json",
+        },
+    )
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        return json.loads(resp.read().decode("utf-8", errors="replace"))
+
+
+def extract_approved_sha(body: str) -> Optional[str]:
+    if "SECURITY_REVIEW: APPROVED" not in body.upper():
+        return None
+    match = re.search(r"PR_HEAD_SHA:\s*([0-9a-f]{7,40})", body, flags=re.IGNORECASE)
+    if not match:
+        return None
+    return match.group(1).lower()
+
+
 def has_security_approval(
     owner: str, repo: str, pr_number: int, token: str, allowed_review_actors: set[str]
 ) -> bool:
-    reviews = fetch_pr_reviews(owner, repo, pr_number, token)
-    for review in reviews:
-        actor = str(review.get("user", {}).get("login", ""))
-        if actor in allowed_review_actors and review.get("state") == "APPROVED":
-            return True
+    pr = fetch_pr(owner, repo, pr_number, token)
+    head_sha = str(pr.get("head", {}).get("sha", "")).lower()
+    if not head_sha:
+        return False
 
     comments = fetch_issue_comments(owner, repo, pr_number, token)
     for comment in comments:
         actor = str(comment.get("user", {}).get("login", ""))
         body = str(comment.get("body", ""))
-        if actor in allowed_review_actors and "SECURITY_REVIEW: APPROVED" in body.upper():
+        approved_sha = extract_approved_sha(body)
+        if actor in allowed_review_actors and approved_sha == head_sha:
             return True
 
     return False
@@ -101,7 +111,7 @@ def main() -> int:
     token = os.environ.get("GITHUB_TOKEN", "")
     allowlist_raw = os.environ.get("ALLOWED_MAIN_PUSH_ACTORS", "jdfetterly,github-actions[bot]")
     denylist_raw = os.environ.get("DENIED_MAIN_PUSH_ACTORS", "openclaw-mini")
-    review_allowlist_raw = os.environ.get("ALLOWED_SECURITY_REVIEW_ACTORS", "jdfetterly")
+    review_allowlist_raw = os.environ.get("ALLOWED_SECURITY_REVIEW_ACTORS", "")
 
     if "/" not in repo_full or not sha or not actor or not token:
         print("error: missing required GitHub context env vars")
@@ -124,6 +134,10 @@ def main() -> int:
         pr_number = pulls[0].get("number")
 
     security_review_required = len(pulls) > 0
+    if security_review_required and not review_allowlist:
+        print("error: ALLOWED_SECURITY_REVIEW_ACTORS not configured")
+        return 1
+
     security_review_ok = False
     if security_review_required and isinstance(pr_number, int):
         try:

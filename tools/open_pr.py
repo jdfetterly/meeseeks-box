@@ -26,8 +26,11 @@ def render_pr_body(
     *,
     changes: Sequence[str],
     why: Sequence[str],
-    security_review_status: str,
-    human_merger: str,
+    security_review_prep: str,
+    impacted_controls: Sequence[str],
+    security_actor_status: str,
+    deploy_impact: str,
+    deploy_details: Sequence[str],
     validations: Sequence[str],
     residual_risk: Sequence[str],
 ) -> str:
@@ -39,17 +42,25 @@ def render_pr_body(
             "- Why:",
             format_bullets(why, "fill in rationale"),
             "",
-            "## Governance",
-            "- Canonical writable repo: `jdfetterly/claw-tower`",
-            "- Upstream reference repo: `JohnRiceML/clawport-ui`",
-            f"- Security review status: {security_review_status}",
-            f"- Human merger: {human_merger}",
+            "## Security Review",
+            f"- Security review preparation run: `{security_review_prep}`",
+            "- Impacted controls / trust boundaries:",
+            format_bullets(impacted_controls, "none"),
+            f"- Security-review actor status: {security_actor_status}",
+            "- Security-agent approval:",
+            "  - Add a PR comment from an allowed security-review actor containing `SECURITY_REVIEW: APPROVED`",
+            "  - Include `PR_HEAD_SHA: <current-pr-head-sha>` in that same comment",
             "",
-            "## Checks",
+            "## Governance Checks",
             "- [x] This change was proposed through a branch + PR, not a direct push to `main`.",
-            "- [x] The `openclaw-mini` actor is not being used as a merger to `main`.",
-            "- [x] Tailnet-only / loopback-only runtime posture is preserved, or the deviation is explicitly documented.",
+            "- [x] The OpenClaw / mini agent actor is not being used as a merger to `main`.",
+            "- [x] The Mac mini production checkout is not being used as an ad hoc development workspace.",
             "- [x] Required documentation updates are included or explicitly not needed.",
+            "",
+            "## Runtime / Deploy Impact",
+            f"- Mac mini production impact: `{deploy_impact}`",
+            "- launchd / deploy script / validation skill impact:",
+            format_bullets(deploy_details, "none"),
             "",
             "## Validation",
             "- Tests / checks run:",
@@ -99,8 +110,35 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--head", default=None, help="head branch (default: current branch)")
     parser.add_argument("--change", action="append", default=[], help="summary item under What changed")
     parser.add_argument("--why", action="append", default=[], help="summary item under Why")
-    parser.add_argument("--security-review-status", default="pending", help="review status line")
-    parser.add_argument("--human-merger", default="jdfetterly", help="human merger line")
+    parser.add_argument(
+        "--security-review-prep",
+        default="n/a",
+        choices=["yes", "no", "n/a"],
+        help="value for Security review preparation run",
+    )
+    parser.add_argument(
+        "--control",
+        action="append",
+        default=[],
+        help="impacted control or trust-boundary note",
+    )
+    parser.add_argument(
+        "--security-actor-status",
+        default="pending with `jd-security-review` (`Top Flight Security`)",
+        help="status line for the expected security-review actor",
+    )
+    parser.add_argument(
+        "--deploy-impact",
+        default="no",
+        choices=["yes", "no"],
+        help="whether the change affects the Mac mini production runtime or deploy path",
+    )
+    parser.add_argument(
+        "--deploy-detail",
+        action="append",
+        default=[],
+        help="detail line for Runtime / Deploy Impact",
+    )
     parser.add_argument("--validation", action="append", default=[], help="test/check line")
     parser.add_argument("--residual-risk", action="append", default=[], help="residual risk line")
     parser.add_argument("--dry-run", action="store_true", help="print the rendered body without mutating GitHub")
@@ -115,8 +153,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     body = render_pr_body(
         changes=args.change,
         why=args.why,
-        security_review_status=args.security_review_status,
-        human_merger=args.human_merger,
+        security_review_prep=args.security_review_prep,
+        impacted_controls=args.control,
+        security_actor_status=args.security_actor_status,
+        deploy_impact=args.deploy_impact,
+        deploy_details=args.deploy_detail,
         validations=args.validation,
         residual_risk=args.residual_risk,
     )
