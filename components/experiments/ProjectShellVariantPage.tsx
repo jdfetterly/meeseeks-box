@@ -5,6 +5,7 @@ import { BoardExecutionSurface } from '@/components/experiments/BoardExecutionSu
 import { MemoryContextRail } from '@/components/experiments/MemoryContextRail';
 import { ProjectExecutionHeader } from '@/components/experiments/ProjectExecutionHeader';
 import { ReviewPreviewPanel } from '@/components/experiments/ReviewPreviewPanel';
+import { StandingWorkPreviewPanel } from '@/components/experiments/StandingWorkPreviewPanel';
 import { ActiveWorkPane } from '@/components/experiments/ActiveWorkPane';
 import type { ProjectShellModel } from '@/lib/experiments/project-shell';
 import type { ShellVariant } from '@/lib/experiments/shell-variants';
@@ -55,6 +56,12 @@ export function ProjectShellVariantPage({
       view={model.view}
       currentPlanTitle={model.currentPlan?.spec.title ?? null}
       lanes={model.lanes}
+      projectId={detail.project.id}
+      projectTitle={detail.project.title}
+      suggestedPrompt={detail.summary.suggestedPrompt ?? `Plan the next step for ${detail.project.title}.`}
+      workspacePath={detail.workspace?.workspacePath ?? null}
+      linkedRepos={detail.project.linkedRepos}
+      starterSpecId={model.currentPlan?.spec.id ?? null}
     />
   );
   const specSurface = (
@@ -233,6 +240,7 @@ Draft the plan and get it ready to turn into cards.`,
   );
   const memory = <MemoryContextRail detail={detail} compact={variant === 'board_os'} />;
   const review = <ReviewPreviewPanel reviewEntries={model.reviewEntries} projectId={detail.project.id} />;
+  const standingWork = <StandingWorkPreviewPanel lanes={model.lanes} projectId={detail.project.id} />;
   const activeWork = <ActiveWorkPane activeWork={model.activeWork} />;
   const memoryDisclosure = (
     <details style={panelDisclosureStyle}>
@@ -244,6 +252,12 @@ Draft the plan and get it ready to turn into cards.`,
     <details style={panelDisclosureStyle}>
       <summary style={summaryStyle}>Review</summary>
       <div style={detailsBodyStyle}>{review}</div>
+    </details>
+  );
+  const standingWorkDisclosure = (
+    <details style={panelDisclosureStyle}>
+      <summary style={summaryStyle}>Standing work</summary>
+      <div style={detailsBodyStyle}>{standingWork}</div>
     </details>
   );
 
@@ -263,6 +277,7 @@ Draft the plan and get it ready to turn into cards.`,
               {model.view === 'plan' ? planPanel : null}
               {assistant}
               {memoryDisclosure}
+              {standingWorkDisclosure}
               {reviewDisclosure}
             </div>
           </div>
@@ -283,6 +298,7 @@ Draft the plan and get it ready to turn into cards.`,
     <div style={{ display: 'grid', gap: '16px' }}>
       {assistant}
       {memoryDisclosure}
+      {standingWorkDisclosure}
       {reviewDisclosure}
     </div>
   );

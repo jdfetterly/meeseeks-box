@@ -60,24 +60,22 @@ export function AssistantWorkspacePanel({
               }}
               variant="outline"
             />
-            {compact ? null : (
-              <OpenChatPanelButton
-                label={workspaceReady ? 'Standing delegation' : 'Prepare workspace'}
-                intent={workspaceReady ? 'create_schedule' : 'project_planning'}
-                context={{
-                  entityType: 'project',
-                  entityId: detail.project.id,
-                  projectId: detail.project.id,
-                  page: 'lab-project',
-                  suggestedPrompt: workspaceReady
-                    ? `Create a standing delegated outcome for ${detail.project.title}.`
-                    : `This project needs a workspace before code execution. Help me bind or bootstrap it.`,
-                  workspaceAction: workspaceReady ? null : 'bind_existing',
-                  starterWorkspacePath: detail.workspace?.workspacePath ?? null,
-                }}
-                variant="outline"
-              />
-            )}
+            <OpenChatPanelButton
+              label={workspaceReady ? 'Standing delegation' : 'Prepare workspace'}
+              intent={workspaceReady ? 'create_schedule' : 'project_planning'}
+              context={{
+                entityType: 'project',
+                entityId: detail.project.id,
+                projectId: detail.project.id,
+                page: 'lab-project',
+                suggestedPrompt: workspaceReady
+                  ? `Create a standing delegated outcome for ${detail.project.title}.`
+                  : `This project needs a workspace before code execution. Help me bind or bootstrap it.`,
+                workspaceAction: workspaceReady ? null : 'bind_existing',
+                starterWorkspacePath: detail.workspace?.workspacePath ?? null,
+              }}
+              variant="outline"
+            />
           </div>
         </details>
       </div>
