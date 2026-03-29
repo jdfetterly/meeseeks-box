@@ -21,9 +21,11 @@ function formatTime(value: string | null) {
 export function StandingWorkPreviewPanel({
   lanes,
   projectId,
+  surface = 'lab',
 }: {
   lanes: WorkBoardLane[];
   projectId: string;
+  surface?: 'lab' | 'control';
 }) {
   const scheduleCards = lanes
     .flatMap((lane) => lane.cards)
@@ -40,7 +42,9 @@ export function StandingWorkPreviewPanel({
         <div style={eyebrowStyle}>Standing work</div>
         <h2 style={panelTitleStyle}>Recurring and scheduled outcomes</h2>
         <p style={panelBodyStyle}>
-          Keep non-code delegated work visible in the same shell so the experiment can be judged on more than coding cards.
+          {surface === 'control'
+            ? 'Keep recurring and scheduled outcomes visible beside the board so delegated operational work is managed with the rest of the project.'
+            : 'Keep non-code delegated work visible in the same shell so the experiment can be judged on more than coding cards.'}
         </p>
       </div>
 
@@ -75,7 +79,7 @@ export function StandingWorkPreviewPanel({
 
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
         <Link href={`/work?projectId=${projectId}`} style={linkChipStyle}>
-          Control board
+          {surface === 'control' ? 'Project board' : 'Control board'}
         </Link>
         <Link href="/schedules" style={linkChipStyle}>
           Canonical schedules

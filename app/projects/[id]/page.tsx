@@ -184,10 +184,15 @@ export default async function ProjectDetailPage({
             </div>
 
             <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
-              <AssistantWorkspacePanel detail={workspace} currentPlan={shellModel?.currentPlan ?? null} />
-              <MemoryContextRail detail={workspace} />
-              <StandingWorkPreviewPanel lanes={shellModel?.lanes ?? []} projectId={workspace.project.id} />
-              <ReviewPreviewPanel reviewEntries={shellModel?.reviewEntries ?? []} projectId={workspace.project.id} />
+              <AssistantWorkspacePanel
+                detail={workspace}
+                currentPlan={shellModel?.currentPlan ?? null}
+                surface="control"
+                pageContext="project"
+              />
+              <MemoryContextRail detail={workspace} surface="control" pageContext="project" />
+              <StandingWorkPreviewPanel lanes={shellModel?.lanes ?? []} projectId={workspace.project.id} surface="control" />
+              <ReviewPreviewPanel reviewEntries={shellModel?.reviewEntries ?? []} projectId={workspace.project.id} surface="control" />
             </div>
           </div>
 

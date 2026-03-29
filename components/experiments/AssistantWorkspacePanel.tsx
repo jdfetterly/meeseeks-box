@@ -7,10 +7,14 @@ export function AssistantWorkspacePanel({
   detail,
   currentPlan,
   compact = false,
+  surface = 'lab',
+  pageContext = 'lab-project',
 }: {
   detail: ProjectDetailRecord;
   currentPlan: ProjectSpecDetail | null;
   compact?: boolean;
+  surface?: 'lab' | 'control';
+  pageContext?: 'lab-project' | 'project' | 'board';
 }) {
   const workspaceReady = detail.summary.workspaceStatus === 'ready';
   const nextStepLabel = currentPlan
@@ -35,7 +39,7 @@ export function AssistantWorkspacePanel({
             entityType: 'project',
             entityId: detail.project.id,
             projectId: detail.project.id,
-            page: 'lab-project',
+            page: pageContext,
             suggestedPrompt: detail.summary.suggestedPrompt,
           }}
         />
@@ -49,7 +53,7 @@ export function AssistantWorkspacePanel({
                 entityType: 'project',
                 entityId: detail.project.id,
                 projectId: detail.project.id,
-                page: 'lab-project',
+                page: pageContext,
                 suggestedPrompt: currentPlan
                   ? `Turn the current plan for ${detail.project.title} into small reviewable cards.`
                   : `Draft the current plan for ${detail.project.title}.`,
@@ -67,7 +71,7 @@ export function AssistantWorkspacePanel({
                 entityType: 'project',
                 entityId: detail.project.id,
                 projectId: detail.project.id,
-                page: 'lab-project',
+                page: pageContext,
                 suggestedPrompt: workspaceReady
                   ? `Create a standing delegated outcome for ${detail.project.title}.`
                   : `This project needs a workspace before code execution. Help me bind or bootstrap it.`,
@@ -85,7 +89,7 @@ export function AssistantWorkspacePanel({
           Open Review Queue
         </Link>
         <Link href={`/projects/${detail.project.id}`} style={linkChipStyle}>
-          Control project
+          {surface === 'control' ? 'Project detail' : 'Control project'}
         </Link>
       </div>
     </section>

@@ -75,11 +75,6 @@ export default async function WorkPage({
   const projectShellRecommendedMove = projectShellTodoCount > 0
     ? 'Select the next reviewable card from To Do and steer it from the same route.'
     : projectShell?.projectDetail.summary.suggestedPrompt ?? 'Use Assistant to define the next reviewable slice.';
-  const projectBoardLink = formatQuery([
-    ['projectId', projectId],
-    ['mode', activeMode === 'project' ? null : activeMode],
-  ]);
-
   function boardCardHref(cardId: string) {
     return formatQuery([
       ['projectId', projectId],
@@ -374,11 +369,25 @@ export default async function WorkPage({
                     </div>
 
                     <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
-                      <ActiveWorkPane activeWork={projectShell.activeWork} />
-                      <AssistantWorkspacePanel detail={projectShell.projectDetail} currentPlan={projectShell.currentPlan} compact />
-                      <MemoryContextRail detail={projectShell.projectDetail} compact />
-                      <StandingWorkPreviewPanel lanes={projectShell.lanes} projectId={projectShell.projectDetail.project.id} />
-                      <ReviewPreviewPanel reviewEntries={projectShell.reviewEntries} projectId={projectShell.projectDetail.project.id} />
+                      <ActiveWorkPane activeWork={projectShell.activeWork} surface="control" pageContext="board" />
+                      <AssistantWorkspacePanel
+                        detail={projectShell.projectDetail}
+                        currentPlan={projectShell.currentPlan}
+                        compact
+                        surface="control"
+                        pageContext="board"
+                      />
+                      <MemoryContextRail detail={projectShell.projectDetail} compact surface="control" pageContext="board" />
+                      <StandingWorkPreviewPanel
+                        lanes={projectShell.lanes}
+                        projectId={projectShell.projectDetail.project.id}
+                        surface="control"
+                      />
+                      <ReviewPreviewPanel
+                        reviewEntries={projectShell.reviewEntries}
+                        projectId={projectShell.projectDetail.project.id}
+                        surface="control"
+                      />
                       <Link href={`/projects/${projectShell.projectDetail.project.id}`} style={projectShellLinkCardStyle}>
                         <strong>Open project detail</strong>
                         <span style={mutedMetaStyle}>Return to project context without losing the board as the main execution surface.</span>

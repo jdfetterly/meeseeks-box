@@ -4,8 +4,12 @@ import type { ActiveWorkPaneModel } from '@/lib/experiments/project-shell';
 
 export function ActiveWorkPane({
   activeWork,
+  surface = 'lab',
+  pageContext = 'lab-project',
 }: {
   activeWork: ActiveWorkPaneModel | null;
+  surface?: 'lab' | 'control';
+  pageContext?: 'lab-project' | 'project' | 'board';
 }) {
   if (!activeWork) {
     return (
@@ -14,7 +18,9 @@ export function ActiveWorkPane({
           <div style={eyebrowStyle}>Active work pane</div>
           <h2 style={panelTitleStyle}>Select a card to zoom into execution context</h2>
           <p style={panelBodyStyle}>
-            This keeps the lab routes close to the Cline-like board-to-detail transition without replacing the control work detail route.
+            {surface === 'control'
+              ? 'Stay on the project board while you inspect the selected card, then drop into the full work detail only when you need the deeper execution surface.'
+              : 'This keeps the lab routes close to the Cline-like board-to-detail transition without replacing the control work detail route.'}
           </p>
         </div>
       </section>
@@ -43,7 +49,9 @@ export function ActiveWorkPane({
         <strong>Execution context</strong>
         <p style={bodyTextStyle}>
           {activeWork.spec?.intent ??
-            'Open the control work detail or the linked conversation for the full brief. This lab pane is intentionally lightweight and keeps the zoomed execution state in one place.'}
+            (surface === 'control'
+              ? 'Open the full work detail or the linked conversation for the deeper brief. This pane stays lightweight so execution context remains visible on the board.'
+              : 'Open the control work detail or the linked conversation for the full brief. This lab pane is intentionally lightweight and keeps the zoomed execution state in one place.')}
         </p>
       </div>
 
@@ -75,7 +83,7 @@ export function ActiveWorkPane({
             entityType: 'work_item',
             entityId: activeWork.workItem.id,
             projectId: activeWork.workItem.projectId,
-            page: 'lab-project',
+            page: pageContext,
             suggestedPrompt: `Adjust ${activeWork.workItem.title} without making me restate context.`,
           }}
           variant="outline"

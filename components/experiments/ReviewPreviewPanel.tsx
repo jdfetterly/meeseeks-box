@@ -4,9 +4,11 @@ import type { ReviewQueueEntry } from '@/lib/review-queue/service';
 export function ReviewPreviewPanel({
   reviewEntries,
   projectId,
+  surface = 'lab',
 }: {
   reviewEntries: ReviewQueueEntry[];
   projectId: string;
+  surface?: 'lab' | 'control';
 }) {
   return (
     <section style={panelStyle}>
@@ -14,7 +16,9 @@ export function ReviewPreviewPanel({
         <div style={eyebrowStyle}>Review preview</div>
         <h2 style={panelTitleStyle}>Completion still flows through Review Queue</h2>
         <p style={panelBodyStyle}>
-          Keep review read-only in the lab shell. The canonical decision surface remains `/review`.
+          {surface === 'control'
+            ? 'This stays a lightweight preview. The canonical decision surface remains `/review`.'
+            : 'Keep review read-only in the lab shell. The canonical decision surface remains `/review`.'}
         </p>
       </div>
 
@@ -50,7 +54,7 @@ export function ReviewPreviewPanel({
 
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
         <Link href={`/work?projectId=${projectId}`} style={linkChipStyle}>
-          Control board
+          {surface === 'control' ? 'Project board' : 'Control board'}
         </Link>
         <Link href="/review" style={linkChipStyle}>
           Canonical queue

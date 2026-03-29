@@ -5,9 +5,13 @@ import type { ProjectDetailRecord } from '@/lib/projects/service';
 export function MemoryContextRail({
   detail,
   compact = false,
+  surface = 'lab',
+  pageContext = 'lab-project',
 }: {
   detail: ProjectDetailRecord;
   compact?: boolean;
+  surface?: 'lab' | 'control';
+  pageContext?: 'lab-project' | 'project' | 'board';
 }) {
   const playbook = detail.playbook;
   const suggestionItems = detail.learningSuggestions.filter((entry) => entry.status === 'open').slice(0, compact ? 2 : 4);
@@ -32,7 +36,9 @@ export function MemoryContextRail({
         <div style={eyebrowStyle}>Memory context</div>
         <h2 style={panelTitleStyle}>Persistent context the agent should inherit</h2>
         <p style={panelBodyStyle}>
-          Keep decisions, constraints, and learned preferences visible here so the lab variants can be judged on memory usefulness instead of raw board tightness.
+          {surface === 'control'
+            ? 'Keep decisions, constraints, and learned preferences visible so project work stays coherent across assistant sessions, boards, and review.'
+            : 'Keep decisions, constraints, and learned preferences visible here so the lab variants can be judged on memory usefulness instead of raw board tightness.'}
         </p>
       </div>
 
@@ -90,7 +96,7 @@ export function MemoryContextRail({
             entityType: 'project',
             entityId: detail.project.id,
             projectId: detail.project.id,
-            page: 'lab-project',
+            page: pageContext,
             suggestedPrompt: `Capture or refine the durable context for ${detail.project.title}. Focus on constraints, decisions, and learned preferences.`,
           }}
           variant="outline"
