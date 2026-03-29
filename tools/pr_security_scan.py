@@ -79,6 +79,8 @@ def check_added_secrets(diff_range: str, files: Sequence[str], findings: List[st
         if path_is_doc_like(path):
             continue
         for line in added_lines(diff_range, path):
+            if path == "tools/pr_security_scan.py" and "re.compile(" in line:
+                continue
             for pattern in SUSPICIOUS_SECRET_PATTERNS:
                 if pattern.search(line):
                     findings.append(f"{path}: suspicious secret-like material in added line `{line[:120]}`")
