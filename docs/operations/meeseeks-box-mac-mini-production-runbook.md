@@ -145,6 +145,18 @@ Additional GitHub secret required for automated security approval comments:
 
 This token must belong to the `jd-security-review` account so the approval comment is posted by the allowlisted security-review actor rather than `github-actions[bot]`.
 
+Recommended token shape for this public repository:
+
+- prefer a classic PAT from `jd-security-review` with `public_repo`
+
+If you use a fine-grained PAT instead, it must have actual access to `jdfetterly/meeseeks-box`, not only repositories owned by `jd-security-review`, and it must include:
+
+- `Pull requests: Read and write`
+- `Issues: Read and write`
+- `Metadata: Read-only`
+
+If the approval workflow fails with `Resource not accessible by personal access token`, the token does not have usable access to this repository and must be replaced.
+
 ## Deploy Transport Prerequisite
 
 The checked-in deploy workflow is intended to run on a dedicated self-hosted runner on the mini with label `meeseeks-box-mini-deploy`.
