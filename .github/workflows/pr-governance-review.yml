@@ -7,12 +7,17 @@ on:
     types: [created, edited]
 
 permissions:
+  checks: write
   contents: read
   pull-requests: read
   issues: read
 
+concurrency:
+  group: pr-governance-review-${{ github.event.pull_request.number || github.event.issue.number || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
-  require-security-review:
+  sync-governance-check:
     if: |
       (github.event_name == 'pull_request_target' && github.event.pull_request.draft == false) ||
       (github.event_name == 'issue_comment' && github.event.issue.pull_request != null)
@@ -33,10 +38,59 @@ jobs:
               .split(",")
               .map((value) => value.trim())
               .filter(Boolean);
+            const requiredCheckName = "PR Governance Review / require-security-review";
+            const detailsUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const summaryLines = [];
+            let conclusion = "success";
+            let title = "Governance review passed";
+
+            const publishCheck = async (headSha, output) => {
+              const existingChecks = await github.rest.checks.listForRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: headSha,
+                check_name: requiredCheckName,
+                per_page: 100,
+              });
+
+              const checkRun = existingChecks.data.check_runs
+                .filter((run) => run.app?.slug === "github-actions")
+                .sort((a, b) => new Date(b.started_at || b.created_at || 0) - new Date(a.started_at || a.created_at || 0))[0];
+
+              const payload = {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: requiredCheckName,
+                status: "completed",
+                conclusion,
+                details_url: detailsUrl,
+                output,
+              };
+
+              if (checkRun) {
+                await github.rest.checks.update({
+                  ...payload,
+                  check_run_id: checkRun.id,
+                });
+                core.info(`Updated governance check run ${checkRun.id} on ${headSha} with conclusion '${conclusion}'.`);
+                return;
+              }
+
+              await github.rest.checks.create({
+                ...payload,
+                head_sha: headSha,
+              });
+              core.info(`Created governance check run on ${headSha} with conclusion '${conclusion}'.`);
+            };
+
+            const failGovernance = (message) => {
+              conclusion = "failure";
+              title = "Governance review failed";
+              summaryLines.push(message);
+            };
 
             if (allowedReviewActors.length === 0) {
-              core.setFailed("ALLOWED_SECURITY_REVIEW_ACTORS is not configured");
-              return;
+              failGovernance("ALLOWED_SECURITY_REVIEW_ACTORS is not configured");
             }
 
             const owner = context.repo.owner;
@@ -62,6 +116,9 @@ jobs:
               return;
             }
 
+            summaryLines.push(`PR #${prNumber}`);
+            summaryLines.push(`Current head SHA: ${pr.head.sha}`);
+
             const comments = await github.paginate(github.rest.issues.listComments, {
               owner,
               repo,
@@ -83,15 +140,29 @@ jobs:
             const mergerRulePresent = /OpenClaw \/ mini agent actor is not being used as a merger to `main`/i.test(body);
 
             if (!mergerRulePresent) {
-              core.setFailed("PR template governance checklist is missing or incomplete");
-              return;
+              failGovernance("PR template governance checklist is missing or incomplete.");
             }
 
             if (!approvalComment) {
-              core.setFailed(
+              failGovernance(
                 "Missing current security-agent approval. Require a `SECURITY_REVIEW: APPROVED` comment from an allowed actor with `PR_HEAD_SHA` matching the current PR head SHA."
               );
-              return;
+            } else {
+              summaryLines.push(`Approval actor: ${approvalComment.user?.login || "(unknown)"}`);
+              summaryLines.push(`Approval comment id: ${approvalComment.id}`);
             }
 
-            core.info(`Security review satisfied. Allowed mergers remain: ${allowedMergers.join(",") || "(unset)"}`);
+            if (allowedMergers.length > 0) {
+              summaryLines.push(`Allowed merger actors: ${allowedMergers.join(", ")}`);
+            }
+
+            if (conclusion === "success") {
+              summaryLines.push("Governance requirements satisfied for the current PR head SHA.");
+            }
+
+            await publishCheck(pr.head.sha, {
+              title,
+              summary: summaryLines.join("\n"),
+            });
+
+            core.info(`Governance check published with conclusion '${conclusion}'. Allowed mergers remain: ${allowedMergers.join(",") || "(unset)"}`);
