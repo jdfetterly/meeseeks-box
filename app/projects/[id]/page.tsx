@@ -77,6 +77,12 @@ export default async function ProjectDetailPage({
               <Link href={`/work?projectId=${workspace.project.id}`} style={linkChipStyle}>
                 Open board
               </Link>
+              <Link 
+                href={`/lab/project/${workspace.project.id}/cockpit`} 
+                style={{ ...linkChipStyle, background: 'var(--text-primary)', color: 'var(--bg)', border: 'none' }}
+              >
+                Open in Lab (Cockpit)
+              </Link>
             </div>
           </div>
 

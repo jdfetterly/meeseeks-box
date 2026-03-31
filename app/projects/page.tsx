@@ -83,12 +83,14 @@ export default function ProjectsPage() {
                 <p style={emptyStyle}>No projects yet.</p>
               ) : (
                 projects.map((project) => (
-                  <Link key={project.projectId} href={`/projects/${project.projectId}`} style={projectRowStyle}>
-                    <div style={{ display: 'grid', gap: '6px', minWidth: 0 }}>
-                      <strong style={{ fontSize: '1rem' }}>{project.title}</strong>
-                      <p style={projectSummaryStyle}>
-                        {project.activeGoal ?? project.currentFocus ?? 'No current focus set yet.'}
-                      </p>
+                  <div key={project.projectId} style={projectRowStyle}>
+                    <div style={{ display: 'grid', gap: '6px', minWidth: 0, flex: 1 }}>
+                      <Link href={`/projects/${project.projectId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                        <strong style={{ fontSize: '1rem' }}>{project.title}</strong>
+                        <p style={projectSummaryStyle}>
+                          {project.activeGoal ?? project.currentFocus ?? 'No current focus set yet.'}
+                        </p>
+                      </Link>
                       <div style={metaRowStyle}>
                         <span>{project.workCount} cards</span>
                         <span>{project.reviewCount} in review</span>
@@ -96,8 +98,15 @@ export default function ProjectsPage() {
                         <span>{project.workspaceStatus === 'ready' ? 'workspace ready' : 'planning only'}</span>
                       </div>
                     </div>
-                    <span style={rowArrowStyle}>Open</span>
-                  </Link>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <Link href={`/lab/project/${project.projectId}/cockpit`} style={{ ...rowArrowStyle, textDecoration: 'none', color: 'var(--text-primary)', background: 'var(--material-thin)', padding: '6px 12px', borderRadius: '999px', border: '1px solid var(--separator)' }}>
+                        Lab
+                      </Link>
+                      <Link href={`/projects/${project.projectId}`} style={{ ...rowArrowStyle, textDecoration: 'none', padding: '6px 12px' }}>
+                        Open →
+                      </Link>
+                    </div>
+                  </div>
                 ))
               )}
             </div>

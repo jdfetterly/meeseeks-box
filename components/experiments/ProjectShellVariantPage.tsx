@@ -6,6 +6,7 @@ import { MemoryContextRail } from '@/components/experiments/MemoryContextRail';
 import { ProjectExecutionHeader } from '@/components/experiments/ProjectExecutionHeader';
 import { ReviewPreviewPanel } from '@/components/experiments/ReviewPreviewPanel';
 import { ActiveWorkPane } from '@/components/experiments/ActiveWorkPane';
+import { InlineIntentInput } from '@/components/experiments/InlineIntentInput';
 import type { ProjectShellModel } from '@/lib/experiments/project-shell';
 import type { ShellVariant } from '@/lib/experiments/shell-variants';
 
@@ -58,171 +59,88 @@ export function ProjectShellVariantPage({
     />
   );
   const specSurface = (
-    <Card>
-      <CardHeader>
-        <CardTitle>{currentPlanDetail ? 'Current spec' : 'Start with the spec'}</CardTitle>
-        <CardDescription>
-          {currentPlanDetail
-            ? 'Shape the spec first. The board becomes useful after decomposition.'
-            : 'Capture intent, outcome, and acceptance before the board appears.'}
-        </CardDescription>
-      </CardHeader>
-      <CardContent style={{ display: 'grid', gap: '16px' }}>
-        {currentPlanDetail ? (
-          <>
-            <div style={{ display: 'grid', gap: '10px' }}>
-              <div style={{ display: 'grid', gap: '6px' }}>
-                <strong style={{ fontSize: '1.05rem' }}>{currentPlanDetail.spec.title}</strong>
-                <p style={bodyTextStyle}>{currentPlanDetail.spec.outcome}</p>
-              </div>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                <span style={miniChipStyle}>
-                  {currentPlanDetail.readiness.isReady ? 'Ready to decompose' : 'Needs refinement'}
-                </span>
-                <span style={miniChipStyle}>
-                  {hasCards ? `${currentPlanDetail.links.length} cards created` : 'No cards yet'}
-                </span>
-                <span style={miniChipStyle}>{workspaceReady ? 'Workspace ready' : 'Workspace not ready'}</span>
-              </div>
+    <div style={{ display: 'grid', gap: '32px', paddingBottom: '24px' }}>
+      {currentPlanDetail ? (
+        <div style={{ display: 'grid', gap: '16px' }}>
+          <div style={{ display: 'grid', gap: '12px' }}>
+            <h1 style={h1Style}>{currentPlanDetail.spec.title}</h1>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <span style={miniChipStyle}>
+                {currentPlanDetail.readiness.isReady ? 'Ready to decompose' : 'Needs refinement'}
+              </span>
+              <span style={miniChipStyle}>
+                {hasCards ? `${currentPlanDetail.links.length} cards created` : 'No cards yet'}
+              </span>
+              <span style={miniChipStyle}>{workspaceReady ? 'Workspace ready' : 'Workspace not ready'}</span>
             </div>
+          </div>
 
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <div>
+            <p style={{ ...bodyTextStyle, fontSize: '1.1rem', lineHeight: 1.6 }}>{currentPlanDetail.spec.intent}</p>
+            
+            <h2 style={h2Style}>Scope</h2>
+            <ul style={{ ...listStyle, fontSize: '1.05rem', lineHeight: 1.6, display: 'grid', gap: '4px' }}>
+              {currentPlanDetail.spec.inScope.length > 0 ? (
+                currentPlanDetail.spec.inScope.map((item) => <li key={item}>{item}</li>)
+              ) : (
+                <li>Scope still needs clarification.</li>
+              )}
+            </ul>
+            
+            <h2 style={h2Style}>Acceptance Criteria</h2>
+            <ul style={{ ...listStyle, fontSize: '1.05rem', lineHeight: 1.6, display: 'grid', gap: '4px' }}>
+              {currentPlanDetail.spec.acceptanceCriteria.length > 0 ? (
+                currentPlanDetail.spec.acceptanceCriteria.map((item) => <li key={item}>{item}</li>)
+              ) : (
+                <li>Add acceptance criteria before decomposition.</li>
+              )}
+            </ul>
+          </div>
+
+          {!hasCards ? (
+            <div style={{ marginTop: '24px' }}>
               <OpenChatPanelButton
-                label="Refine spec"
-                intent="spec_planning"
+                label={currentPlanDetail.readiness.isReady ? "Decompose into executable cards" : "Refinement needed before decomposition"}
+                intent={currentPlanDetail.readiness.isReady ? "spec_decomposition" : "spec_planning"}
                 context={{
                   entityType: 'project',
                   entityId: detail.project.id,
                   projectId: detail.project.id,
                   page: 'lab-project',
-                  suggestedPrompt: `Refine the current plan for ${detail.project.title}. Keep it sharp and lightweight.`,
-                  draftPrompt: `Refine the current plan for ${detail.project.title}.
-
-Plan title: ${currentPlanDetail.spec.title}
-Intent:
-${currentPlanDetail.spec.intent}
-
-Outcome:
-${currentPlanDetail.spec.outcome}
-
-In scope:
-${currentPlanDetail.spec.inScope.join('\n')}`,
+                  suggestedPrompt: currentPlanDetail.readiness.isReady 
+                    ? `Turn the current plan for ${detail.project.title} into small reviewable cards.`
+                    : `Help me refine the boundaries and acceptance criteria for ${detail.project.title}.`,
+                  draftPrompt: currentPlanDetail.readiness.isReady 
+                    ? `Turn the current plan for ${detail.project.title} into the smallest useful set of cards I can review cleanly.`
+                    : `Help me define the remaining open items for ${detail.project.title}.`,
                   starterRepoList: detail.project.linkedRepos,
                   starterWorkspacePath: detail.workspace?.workspacePath ?? null,
                   starterSpecId: currentPlanDetail.spec.id,
                   starterSpecTitle: currentPlanDetail.spec.title,
                 }}
               />
-              <OpenChatPanelButton
-                label={hasCards ? 'Rework decomposition' : 'Turn into cards'}
-                intent="spec_decomposition"
-                context={{
-                  entityType: 'project',
-                  entityId: detail.project.id,
-                  projectId: detail.project.id,
-                  page: 'lab-project',
-                  suggestedPrompt: `Turn the current plan for ${detail.project.title} into small reviewable cards.`,
-                  draftPrompt: `Turn the current plan for ${detail.project.title} into the smallest useful set of cards I can review cleanly.`,
-                  starterRepoList: detail.project.linkedRepos,
-                  starterWorkspacePath: detail.workspace?.workspacePath ?? null,
-                  starterSpecId: currentPlanDetail.spec.id,
-                  starterSpecTitle: currentPlanDetail.spec.title,
-                }}
-                variant="outline"
-              />
             </div>
-
-            <details style={panelDisclosureStyle} open>
-              <summary style={summaryStyle}>Intent and scope</summary>
-              <div style={detailsBodyStyle}>
-                <p style={bodyTextStyle}>{currentPlanDetail.spec.intent}</p>
-                <ul style={listStyle}>
-                  {currentPlanDetail.spec.inScope.length > 0 ? (
-                    currentPlanDetail.spec.inScope.map((item) => <li key={item}>{item}</li>)
-                  ) : (
-                    <li>Scope still needs clarification.</li>
-                  )}
-                </ul>
-              </div>
-            </details>
-
-            <details style={panelDisclosureStyle}>
-              <summary style={summaryStyle}>Acceptance</summary>
-              <div style={detailsBodyStyle}>
-                <ul style={listStyle}>
-                  {currentPlanDetail.spec.acceptanceCriteria.length > 0 ? (
-                    currentPlanDetail.spec.acceptanceCriteria.map((item) => <li key={item}>{item}</li>)
-                  ) : (
-                    <li>Add acceptance criteria before decomposition.</li>
-                  )}
-                </ul>
-              </div>
-            </details>
-          </>
-        ) : (
-          <>
-            <p style={bodyTextStyle}>
-              Start in assistant. Describe the outcome, what matters now, and what done should look like.
-            </p>
-            <OpenChatPanelButton
-              label="Draft spec"
-              intent="spec_planning"
-              context={{
-                entityType: 'project',
-                entityId: detail.project.id,
-                projectId: detail.project.id,
-                page: 'lab-project',
-                suggestedPrompt: `Help me shape the current plan for ${detail.project.title}. Keep it lightweight and only ask if something important is missing.`,
-                draftPrompt: `Help me define the current plan for ${detail.project.title}.
-
-What I want built:
-What matters most right now:
-Anything already known about repos or workspace:
-What "done" should look like:
-
-Draft the plan and get it ready to turn into cards.`,
-                starterRepoList: detail.project.linkedRepos,
-                starterWorkspacePath: detail.workspace?.workspacePath ?? null,
-              }}
-            />
-          </>
-        )}
-      </CardContent>
-    </Card>
-  );
-  const boardStagePanel = hasCards ? (
-    board
-  ) : (
-    <Card>
-      <CardHeader>
-        <CardTitle>Execution board</CardTitle>
-        <CardDescription>Board stays hidden until the spec has been turned into cards.</CardDescription>
-      </CardHeader>
-      <CardContent style={{ display: 'grid', gap: '12px' }}>
-        <p style={bodyTextStyle}>
-          Finish the spec and create reviewable execution cards first.
-        </p>
-        {currentPlanDetail ? (
-          <OpenChatPanelButton
-            label="Turn spec into cards"
-            intent="spec_decomposition"
+          ) : null}
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gap: '24px', alignItems: 'start' }}>
+          <InlineIntentInput
+            ghostedH1Style={ghostedH1Style}
+            projectTitle={detail.project.title}
             context={{
               entityType: 'project',
               entityId: detail.project.id,
               projectId: detail.project.id,
               page: 'lab-project',
-              suggestedPrompt: `Turn the current plan for ${detail.project.title} into small reviewable cards.`,
-              draftPrompt: `Turn the current plan for ${detail.project.title} into the smallest useful set of cards I can review cleanly.`,
               starterRepoList: detail.project.linkedRepos,
               starterWorkspacePath: detail.workspace?.workspacePath ?? null,
-              starterSpecId: currentPlanDetail.spec.id,
-              starterSpecTitle: currentPlanDetail.spec.title,
             }}
           />
-        ) : null}
-      </CardContent>
-    </Card>
+        </div>
+      )}
+    </div>
   );
+  const boardStagePanel = hasCards ? board : null;
 
   const assistant = (
     <AssistantWorkspacePanel
@@ -234,18 +152,18 @@ Draft the plan and get it ready to turn into cards.`,
   const memory = <MemoryContextRail detail={detail} compact={variant === 'board_os'} />;
   const review = <ReviewPreviewPanel reviewEntries={model.reviewEntries} projectId={detail.project.id} />;
   const activeWork = <ActiveWorkPane activeWork={model.activeWork} />;
-  const memoryDisclosure = (
+  const memoryDisclosure = (hasCards || model.activeWork !== null) ? (
     <details style={panelDisclosureStyle}>
       <summary style={summaryStyle}>Memory</summary>
       <div style={detailsBodyStyle}>{memory}</div>
     </details>
-  );
-  const reviewDisclosure = (
+  ) : null;
+  const reviewDisclosure = (hasCards || (model.reviewEntries && model.reviewEntries.length > 0)) ? (
     <details style={panelDisclosureStyle}>
       <summary style={summaryStyle}>Review</summary>
       <div style={detailsBodyStyle}>{review}</div>
     </details>
-  );
+  ) : null;
 
   if (variant === 'board_os') {
     return (
@@ -363,3 +281,7 @@ const panelDisclosureStyle = {
   background: 'var(--material-ultra-thin)',
   padding: '12px 14px',
 };
+
+const h1Style = { margin: 0, fontSize: '2.4rem', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-primary)' };
+const ghostedH1Style = { margin: 0, fontSize: '2.4rem', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-quaternary)' };
+const h2Style = { margin: '24px 0 12px', fontSize: '1.4rem', fontWeight: 600, color: 'var(--text-primary)' };

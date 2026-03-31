@@ -6,6 +6,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  useRef,
   type CSSProperties,
   type ReactNode,
 } from 'react';
@@ -37,6 +38,7 @@ export interface ChatPanelContextValue {
   starterSpecTitle?: string | null;
   workspaceAction?: 'bind_existing' | 'bootstrap' | null;
   pinnedConversationId?: string | null;
+  autoSubmit?: boolean;
 }
 
 interface ChatPanelState {
@@ -821,7 +823,18 @@ function ChatPanel() {
   const [statusText, setStatusText] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const submitButtonRef = useRef<HTMLButtonElement>(null);
+
   const headerText = useMemo(() => formatIntentLabel(intent), [intent]);
+
+  useEffect(() => {
+    if (isOpen && context.autoSubmit && prompt && !proposal && !isSubmitting && messages.length === 0) {
+      const timer = setTimeout(() => {
+        submitButtonRef.current?.click();
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, context.autoSubmit, prompt, proposal, isSubmitting, messages.length]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 767px)');
@@ -1040,6 +1053,7 @@ function ChatPanel() {
 
         <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
           <Button
+            ref={submitButtonRef}
             variant="secondary"
             onClick={async () => {
               const trimmed = prompt.trim() || context.suggestedPrompt || '';
