@@ -69,7 +69,8 @@ Required sequence:
 5. `main-push-policy` passes
 6. deploy workflow triggers
 7. mini deploy script updates the production checkout
-8. post-deploy validation skill runs
+8. deterministic healthcheck passes
+9. Tailnet-served app remains reachable
 
 ## Git Setup
 
@@ -144,6 +145,24 @@ Additional GitHub secret required for automated security approval comments:
 
 This token must belong to the `jd-security-review` account so the approval comment is posted by the allowlisted security-review actor rather than `github-actions[bot]`.
 
+Credential contract:
+
+1. the token authenticates as `jd-security-review`
+2. the authenticated actor has write-or-better access to `jdfetterly/meeseeks-box`
+3. the token can create, update, and delete issue comments on this repository
+
+Canonical verification step:
+
+1. open GitHub Actions for this repo
+2. run `Security Review Token Diagnostics`
+3. pass the current PR number or another safe issue number as `issue_number`
+4. confirm the workflow reports:
+   - authenticated actor: `jd-security-review`
+   - repository permission: `write` or better
+   - create / update / delete comment checks all succeed
+
+Do not treat token type as the source of truth. The diagnostics workflow is the source of truth.
+
 ## Deploy Transport Prerequisite
 
 The checked-in deploy workflow is intended to run on a dedicated self-hosted runner on the mini with label `meeseeks-box-mini-deploy`.
@@ -169,6 +188,11 @@ The intended PR flow is:
 3. `PR Governance Review` reruns on matching PR comment updates and accepts the approval only when `PR_HEAD_SHA` matches the current PR head commit.
 
 This keeps the merge step human-only while removing the need for manual security-comment entry on every PR revision.
+
+Required branch protection checks on `main` should include:
+
+- `PR Security Scan / security-scan`
+- `PR Governance Review / require-security-review`
 
 Bootstrap note:
 
@@ -220,23 +244,45 @@ Its job is:
 6. hit the healthcheck URL
 7. run the optional post-deploy validation hook
 
-## Post-Deploy Validation Skill
+## Current Deploy Validation
 
-After deterministic deploy, the mini should run an OpenClaw validation skill.
+The current production safety floor is deterministic and non-agent:
 
-Contract:
+1. build succeeds
+2. launchd service restarts
+3. healthcheck URL responds
+4. Tailnet-served Meeseeks Box URL responds
+
+Current production URL:
+
+- [https://jds-mac-mini.tail13d577.ts.net/](https://jds-mac-mini.tail13d577.ts.net/)
+
+The deploy script may run a repo-local `scripts/post-deploy-validate.sh` hook if one exists, but the intended steady state right now is that no OpenClaw validation hook is installed yet.
+
+The deploy script also requires explicit opt-in before it will run any post-deploy hook:
+
+- `POST_DEPLOY_VALIDATION_ENABLED=1`
+
+## Deferred OpenClaw Validation
+
+The OpenClaw post-deploy validator is intentionally deferred until the app contract stabilizes.
+
+Future-phase contract:
 
 - [post-deploy-validation-skill.md](/Users/jdfetterly/Ops/meeseeks-box-main/docs/operations/post-deploy-validation-skill.md)
 
-The deploy script will run:
+Readiness gate before enabling it:
 
-- `scripts/post-deploy-validate.sh`
+1. deploys succeed consistently
+2. canonical production routes are stable
+3. one fixture or demo project is intentionally stabilized for validation
+4. success and failure semantics for those routes are known
+5. the team agrees the validator is checking a real contract, not moving targets
 
-if that file exists and is executable on the mini checkout.
+Until those conditions are met:
 
-The tracked template for that hook is:
-
-- [post-deploy-validate.example.sh](/Users/jdfetterly/Ops/meeseeks-box-main/scripts/post-deploy-validate.example.sh)
+1. do not install an executable `scripts/post-deploy-validate.sh` on the mini production checkout
+2. leave `POST_DEPLOY_VALIDATION_ENABLED` unset or set to `0`
 
 ## Why This Deviates From `iron-claw-mini`
 

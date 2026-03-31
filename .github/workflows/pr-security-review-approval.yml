@@ -50,6 +50,8 @@ jobs:
               pull_number: prNumber,
             });
 
+            const authenticated = await github.rest.users.getAuthenticated();
+            const reviewActor = authenticated.data.login;
             const headSha = pr.data.head.sha;
             const marker = "SECURITY_REVIEW: APPROVED";
             const body = [
@@ -69,24 +71,36 @@ jobs:
             const existing = comments.find((comment) => {
               const actor = comment.user?.login || "";
               const text = comment.body || "";
-              return actor === context.actor && text.includes(marker);
+              return actor === reviewActor && text.includes(marker);
             });
 
-            if (existing) {
-              await github.rest.issues.updateComment({
+            try {
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  owner,
+                  repo,
+                  comment_id: existing.id,
+                  body,
+                });
+                core.info(`Updated existing security approval comment for PR #${prNumber} as ${reviewActor}.`);
+                return;
+              }
+
+              await github.rest.issues.createComment({
                 owner,
                 repo,
-                comment_id: existing.id,
+                issue_number: prNumber,
                 body,
               });
-              core.info(`Updated existing security approval comment for PR #${prNumber}.`);
-              return;
+              core.info(`Created security approval comment for PR #${prNumber} as ${reviewActor}.`);
+            } catch (error) {
+              if (error.status === 403) {
+                core.setFailed(
+                  `JD_SECURITY_REVIEW_TOKEN authenticated as '${reviewActor}' but cannot comment on ${owner}/${repo}. ` +
+                  "Run the 'Security Review Token Diagnostics' workflow with a target PR or issue number to verify the credential contract " +
+                  "before rotating the secret again. The token must authenticate as jd-security-review and be able to create, update, and delete comments on this repository."
+                );
+                return;
+              }
+              throw error;
             }
-
-            await github.rest.issues.createComment({
-              owner,
-              repo,
-              issue_number: prNumber,
-              body,
-            });
-            core.info(`Created security approval comment for PR #${prNumber}.`);

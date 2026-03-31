@@ -4,7 +4,7 @@ These docs define how Meeseeks Box is governed and served from the Mac mini.
 
 - `mini-shared-policy.md`: shared policy inherited from the Mac mini external-agent repo model.
 - `meeseeks-box-mac-mini-production-runbook.md`: concrete Meeseeks Box production branch, review, merge, and deploy workflow on the Mac mini.
-- `post-deploy-validation-skill.md`: contract for the OpenClaw validation skill that runs after deploy.
+- `post-deploy-validation-skill.md`: deferred-phase contract for the OpenClaw validation skill, to be enabled only after the app surface stabilizes.
 
 Current security-review actor assumption for this repo:
 
