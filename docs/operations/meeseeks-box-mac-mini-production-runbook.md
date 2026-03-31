@@ -69,7 +69,8 @@ Required sequence:
 5. `main-push-policy` passes
 6. deploy workflow triggers
 7. mini deploy script updates the production checkout
-8. post-deploy validation skill runs
+8. deterministic healthcheck passes
+9. Tailnet-served app remains reachable
 
 ## Git Setup
 
@@ -220,23 +221,45 @@ Its job is:
 6. hit the healthcheck URL
 7. run the optional post-deploy validation hook
 
-## Post-Deploy Validation Skill
+## Current Deploy Validation
 
-After deterministic deploy, the mini should run an OpenClaw validation skill.
+The current production safety floor is deterministic and non-agent:
 
-Contract:
+1. build succeeds
+2. launchd service restarts
+3. healthcheck URL responds
+4. Tailnet-served Meeseeks Box URL responds
+
+Current production URL:
+
+- [https://jds-mac-mini.tail13d577.ts.net/](https://jds-mac-mini.tail13d577.ts.net/)
+
+The deploy script may run a repo-local `scripts/post-deploy-validate.sh` hook if one exists, but the intended steady state right now is that no OpenClaw validation hook is installed yet.
+
+The deploy script also requires explicit opt-in before it will run any post-deploy hook:
+
+- `POST_DEPLOY_VALIDATION_ENABLED=1`
+
+## Deferred OpenClaw Validation
+
+The OpenClaw post-deploy validator is intentionally deferred until the app contract stabilizes.
+
+Future-phase contract:
 
 - [post-deploy-validation-skill.md](/Users/jdfetterly/Ops/meeseeks-box-main/docs/operations/post-deploy-validation-skill.md)
 
-The deploy script will run:
+Readiness gate before enabling it:
 
-- `scripts/post-deploy-validate.sh`
+1. deploys succeed consistently
+2. canonical production routes are stable
+3. one fixture or demo project is intentionally stabilized for validation
+4. success and failure semantics for those routes are known
+5. the team agrees the validator is checking a real contract, not moving targets
 
-if that file exists and is executable on the mini checkout.
+Until those conditions are met:
 
-The tracked template for that hook is:
-
-- [post-deploy-validate.example.sh](/Users/jdfetterly/Ops/meeseeks-box-main/scripts/post-deploy-validate.example.sh)
+1. do not install an executable `scripts/post-deploy-validate.sh` on the mini production checkout
+2. leave `POST_DEPLOY_VALIDATION_ENABLED` unset or set to `0`
 
 ## Why This Deviates From `iron-claw-mini`
 

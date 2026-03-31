@@ -1,8 +1,10 @@
 # Post-Deploy Validation Skill
 
+Status: deferred for a later rollout phase.
+
 ## Purpose
 
-This document defines the contract for the OpenClaw skill that validates Meeseeks Box after production deploy on the Mac mini.
+This document defines the future contract for the OpenClaw skill that will validate Meeseeks Box after production deploy on the Mac mini.
 
 This skill is not the deploy authority.
 
@@ -12,7 +14,33 @@ The deploy authority remains:
 2. GitHub workflow trigger
 3. repo-local deploy script on the mini
 
-The skill exists to validate the running app after deploy.
+The skill exists to validate the running app after deploy once the app surface is stable enough to validate.
+
+It is not part of the current production safety floor.
+
+## Current State
+
+The current production safety floor is deterministic only:
+
+1. merge to `main`
+2. GitHub workflow trigger
+3. repo-local deploy script on the mini
+4. build + restart + healthcheck
+5. Tailnet-served app remains reachable
+
+Until the readiness gate below is met, do not install an executable `scripts/post-deploy-validate.sh` hook in the production checkout.
+Also leave `POST_DEPLOY_VALIDATION_ENABLED` unset or set to `0`.
+
+## Readiness Gate
+
+Enable this skill only after all of the following are true:
+
+1. canonical production entrypoint `/` is stable
+2. canonical project and board/work routes are stable
+3. expected empty-state behavior is intentional and documented
+4. one stable fixture or demo project exists for validation
+5. review/work/project screens are not churning materially between deploys
+6. pass/fail semantics for the checked routes are known
 
 ## Required Behavior
 
@@ -68,9 +96,13 @@ The deploy script looks for:
 
 - `scripts/post-deploy-validate.sh`
 
-This script should become the repo-local wrapper that invokes the real OpenClaw validation skill on the mini.
+and requires:
 
-Until that skill exists, deploy remains deterministic but validation remains limited to the basic HTTP healthcheck.
+- `POST_DEPLOY_VALIDATION_ENABLED=1`
+
+This script should eventually become the repo-local wrapper that invokes the real OpenClaw validation skill on the mini.
+
+Until that skill is intentionally enabled, deploy remains deterministic and validation remains limited to the basic HTTP healthcheck and Tailnet reachability.
 
 The wrapper should accept the production base URL through environment, defaulting to:
 

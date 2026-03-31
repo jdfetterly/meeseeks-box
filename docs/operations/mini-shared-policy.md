@@ -38,7 +38,7 @@ Meeseeks Box follows the same governance model, with these app-specific extensio
    - build
    - restart the service
    - run smoke checks
-4. After deterministic deploy, an OpenClaw post-deploy validation skill should run on the mini.
+4. OpenClaw post-deploy validation is a later-phase enhancement, not part of the current production safety floor.
 
 ## Allowed Deviations
 
@@ -63,7 +63,7 @@ The preferred shape is:
 1. GitHub Actions detects a valid push to `main`.
 2. A dedicated self-hosted runner on the mini picks up the deploy job.
 3. The mini runs the repo-local deploy script in the production checkout.
-4. The mini then runs the post-deploy validation skill.
+4. The mini may later run a post-deploy validation skill, but only after the app routes and fixture data stabilize.
 
 The policy requirement is:
 

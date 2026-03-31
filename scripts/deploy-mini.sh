@@ -8,6 +8,7 @@ HEALTHCHECK_URL=""
 HEALTHCHECK_ATTEMPTS="${HEALTHCHECK_ATTEMPTS:-20}"
 HEALTHCHECK_SLEEP_SECONDS="${HEALTHCHECK_SLEEP_SECONDS:-3}"
 POST_DEPLOY_HOOK="scripts/post-deploy-validate.sh"
+POST_DEPLOY_VALIDATION_ENABLED="${POST_DEPLOY_VALIDATION_ENABLED:-0}"
 
 usage() {
   cat <<'EOF'
@@ -114,11 +115,15 @@ done
 
 echo "==> Healthcheck passed"
 
-if [[ -x "$POST_DEPLOY_HOOK" ]]; then
+if [[ "$POST_DEPLOY_VALIDATION_ENABLED" == "1" && -x "$POST_DEPLOY_HOOK" ]]; then
   echo "==> Running post-deploy validation hook"
   "./$POST_DEPLOY_HOOK"
+elif [[ "$POST_DEPLOY_VALIDATION_ENABLED" == "1" ]]; then
+  echo "==> Post-deploy validation enabled, but no executable hook found at $POST_DEPLOY_HOOK"
+  echo "==> Deterministic deploy completed without post-deploy validation"
 else
-  echo "==> No executable post-deploy validation hook found at $POST_DEPLOY_HOOK"
+  echo "==> Post-deploy validation is disabled for this rollout"
+  echo "==> Deterministic deploy completed without agent validation"
 fi
 
 echo "==> Deploy complete"
