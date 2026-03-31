@@ -1,0 +1,120 @@
+name: Security Review Token Diagnostics
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Issue or pull request number used for the comment write test"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+
+jobs:
+  diagnose-token:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate security review token presence
+        shell: bash
+        env:
+          JD_SECURITY_REVIEW_TOKEN: ${{ secrets.JD_SECURITY_REVIEW_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${JD_SECURITY_REVIEW_TOKEN:-}" ]; then
+            echo "Missing required secret: JD_SECURITY_REVIEW_TOKEN" >&2
+            exit 1
+          fi
+
+      - name: Diagnose security review token contract
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.JD_SECURITY_REVIEW_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issueNumber = Number(core.getInput("issue_number"));
+
+            if (!Number.isInteger(issueNumber) || issueNumber <= 0) {
+              core.setFailed("issue_number must be a positive integer");
+              return;
+            }
+
+            const auth = await github.rest.users.getAuthenticated();
+            const reviewActor = auth.data.login;
+            core.notice(`Authenticated actor: ${reviewActor}`);
+
+            if (reviewActor !== "jd-security-review") {
+              core.setFailed(
+                `JD_SECURITY_REVIEW_TOKEN authenticated as '${reviewActor}', expected 'jd-security-review'.`
+              );
+              return;
+            }
+
+            const permission = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner,
+              repo,
+              username: reviewActor,
+            });
+            const roleName = permission.data.role_name || permission.data.permission;
+            core.notice(`Repository permission: ${roleName}`);
+
+            const allowedRoles = new Set(["write", "maintain", "admin"]);
+            if (!allowedRoles.has(roleName)) {
+              core.setFailed(
+                `Expected jd-security-review to have write-or-better access on ${owner}/${repo}, got '${roleName}'.`
+              );
+              return;
+            }
+
+            const marker = "<!-- security-review-token-diagnostics -->";
+            const body = [
+              marker,
+              "Temporary credential verification comment.",
+              `Actor: ${reviewActor}`,
+              `Workflow run: ${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`,
+            ].join("\n");
+
+            let commentId = null;
+            try {
+              const created = await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: issueNumber,
+                body,
+              });
+              commentId = created.data.id;
+              core.notice(`Created diagnostic comment ${commentId}.`);
+
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: commentId,
+                body: `${body}\nUpdated: yes`,
+              });
+              core.notice(`Updated diagnostic comment ${commentId}.`);
+            } catch (error) {
+              core.setFailed(
+                `Comment API test failed for ${owner}/${repo}#${issueNumber}: ${error.status || "unknown"} ${error.message}`
+              );
+              return;
+            } finally {
+              if (commentId) {
+                try {
+                  await github.rest.issues.deleteComment({
+                    owner,
+                    repo,
+                    comment_id: commentId,
+                  });
+                  core.notice(`Deleted diagnostic comment ${commentId}.`);
+                } catch (error) {
+                  core.warning(
+                    `Created diagnostic comment ${commentId} but could not delete it automatically: ${error.status || "unknown"} ${error.message}`
+                  );
+                }
+              }
+            }
+
+            core.notice(`JD_SECURITY_REVIEW_TOKEN contract passed for ${owner}/${repo}.`);

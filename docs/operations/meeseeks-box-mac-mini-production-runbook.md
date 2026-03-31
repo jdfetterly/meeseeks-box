@@ -145,17 +145,23 @@ Additional GitHub secret required for automated security approval comments:
 
 This token must belong to the `jd-security-review` account so the approval comment is posted by the allowlisted security-review actor rather than `github-actions[bot]`.
 
-Recommended token shape for this public repository:
+Credential contract:
 
-- prefer a classic PAT from `jd-security-review` with `public_repo`
+1. the token authenticates as `jd-security-review`
+2. the authenticated actor has write-or-better access to `jdfetterly/meeseeks-box`
+3. the token can create, update, and delete issue comments on this repository
 
-If you use a fine-grained PAT instead, it must have actual access to `jdfetterly/meeseeks-box`, not only repositories owned by `jd-security-review`, and it must include:
+Canonical verification step:
 
-- `Pull requests: Read and write`
-- `Issues: Read and write`
-- `Metadata: Read-only`
+1. open GitHub Actions for this repo
+2. run `Security Review Token Diagnostics`
+3. pass the current PR number or another safe issue number as `issue_number`
+4. confirm the workflow reports:
+   - authenticated actor: `jd-security-review`
+   - repository permission: `write` or better
+   - create / update / delete comment checks all succeed
 
-If the approval workflow fails with `Resource not accessible by personal access token`, the token does not have usable access to this repository and must be replaced.
+Do not treat token type as the source of truth. The diagnostics workflow is the source of truth.
 
 ## Deploy Transport Prerequisite
 
@@ -182,6 +188,11 @@ The intended PR flow is:
 3. `PR Governance Review` reruns on matching PR comment updates and accepts the approval only when `PR_HEAD_SHA` matches the current PR head commit.
 
 This keeps the merge step human-only while removing the need for manual security-comment entry on every PR revision.
+
+Required branch protection checks on `main` should include:
+
+- `PR Security Scan / security-scan`
+- `PR Governance Review / require-security-review`
 
 Bootstrap note:
 

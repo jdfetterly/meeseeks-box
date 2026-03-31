@@ -97,8 +97,8 @@ jobs:
               if (error.status === 403) {
                 core.setFailed(
                   `JD_SECURITY_REVIEW_TOKEN authenticated as '${reviewActor}' but cannot comment on ${owner}/${repo}. ` +
-                  "Use a token from jd-security-review that has actual access to this repository. " +
-                  "For this public repo, prefer a classic PAT with public_repo scope, or recreate a fine-grained PAT that explicitly includes jdfetterly/meeseeks-box with Issues or Pull requests write."
+                  "Run the 'Security Review Token Diagnostics' workflow with a target PR or issue number to verify the credential contract " +
+                  "before rotating the secret again. The token must authenticate as jd-security-review and be able to create, update, and delete comments on this repository."
                 );
                 return;
               }
