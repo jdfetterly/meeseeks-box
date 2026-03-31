@@ -35,10 +35,11 @@ jobs:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const issueNumber = Number(core.getInput("issue_number"));
+            const issueNumberRaw = context.payload.inputs?.issue_number || "";
+            const issueNumber = Number(issueNumberRaw);
 
             if (!Number.isInteger(issueNumber) || issueNumber <= 0) {
-              core.setFailed("issue_number must be a positive integer");
+              core.setFailed(`issue_number must be a positive integer, received '${issueNumberRaw || "(empty)"}'`);
               return;
             }
 
