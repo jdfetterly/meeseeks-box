@@ -83,9 +83,7 @@ export function MobileSidebar({
           height: '56px',
           padding: '0 14px',
           gap: '12px',
-          background: 'var(--sidebar-bg)',
-          backdropFilter: 'blur(40px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+          background: 'var(--bg-secondary)',
           borderBottom: '1px solid var(--separator)',
         }}
       >
@@ -146,10 +144,8 @@ export function MobileSidebar({
           gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
           gap: '6px',
           padding: '10px 10px calc(env(safe-area-inset-bottom, 0px) + 10px)',
-          background: 'var(--sidebar-bg)',
+          background: 'var(--bg-secondary)',
           borderTop: '1px solid var(--separator)',
-          backdropFilter: 'blur(40px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(40px) saturate(180%)',
         }}
       >
         {MOBILE_PRIMARY_NAV_ITEMS.map((item) => {
@@ -224,7 +220,7 @@ export function MobileSidebar({
           zIndex: 56,
           transform: moreOpen ? 'translateY(0)' : 'translateY(105%)',
           transition: 'transform 220ms cubic-bezier(0.32, 0.72, 0, 1)',
-          background: 'var(--sidebar-bg)',
+          background: 'var(--bg-secondary)',
           borderTopLeftRadius: '18px',
           borderTopRightRadius: '18px',
           borderTop: '1px solid var(--separator)',

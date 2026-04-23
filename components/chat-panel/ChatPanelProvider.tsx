@@ -907,14 +907,16 @@ function ChatPanel() {
         width: isMobile ? '100%' : 380,
         flexShrink: 0,
         borderLeft: isMobile ? 'none' : '1px solid var(--separator)',
-        background: 'color-mix(in srgb, var(--sidebar-bg) 84%, black 16%)',
+        background: isMobile
+          ? 'linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg) 100%)'
+          : 'color-mix(in srgb, var(--sidebar-bg) 84%, black 16%)',
         display: 'flex',
         flexDirection: 'column',
         minHeight: 0,
         position: 'fixed',
         inset: isMobile ? 0 : '0 0 0 auto',
         zIndex: 70,
-        boxShadow: 'var(--shadow-overlay)',
+        boxShadow: isMobile ? 'none' : 'var(--shadow-overlay)',
       }}
     >
       <div
@@ -923,13 +925,19 @@ function ChatPanel() {
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: 'var(--space-3)',
-          padding: 'var(--space-4)',
+          padding: isMobile
+            ? 'max(env(safe-area-inset-top, 0px), var(--space-4)) var(--space-4) var(--space-3)'
+            : 'var(--space-4)',
           borderBottom: '1px solid var(--separator)',
+          background: isMobile ? 'color-mix(in srgb, var(--bg-secondary) 95%, black 5%)' : 'transparent',
+          position: 'sticky',
+          top: 0,
+          zIndex: 1,
         }}
       >
         <div style={{ display: 'grid', gap: '4px' }}>
-          <strong style={{ fontSize: '1rem' }}>{headerText}</strong>
-          <span style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
+          <strong style={{ fontSize: isMobile ? '0.95rem' : '1rem' }}>{headerText}</strong>
+          <span style={{ color: 'var(--text-tertiary)', fontSize: isMobile ? '0.8rem' : '0.85rem' }}>
             {deriveTitle(context)} • {context.page}
           </span>
         </div>
@@ -938,7 +946,13 @@ function ChatPanel() {
         </Button>
       </div>
 
-      <div style={{ padding: 'var(--space-4)', display: 'grid', gap: 'var(--space-3)' }}>
+      <div
+        style={{
+          padding: isMobile ? 'var(--space-3) var(--space-4) calc(var(--space-4) + env(safe-area-inset-bottom, 0px))' : 'var(--space-4)',
+          display: 'grid',
+          gap: 'var(--space-3)',
+        }}
+      >
         {conversationTitle ? (
           <div style={conversationMetaStyle}>
             <strong>{conversationTitle}</strong>
@@ -952,9 +966,9 @@ function ChatPanel() {
             padding: 'var(--space-3)',
             borderRadius: 'var(--radius-lg)',
             border: '1px solid var(--separator)',
-            background: 'var(--material-thin)',
+            background: isMobile ? 'var(--bg-tertiary)' : 'var(--material-thin)',
             color: 'var(--text-secondary)',
-            fontSize: '0.9rem',
+            fontSize: isMobile ? '0.95rem' : '0.9rem',
           }}
         >
           {context.suggestedPrompt ?? 'Tell the agent what you want to get done and it will turn it into a proposal.'}
@@ -966,10 +980,10 @@ function ChatPanel() {
           placeholder="Tell the agent what you want to get done."
           style={{
             width: '100%',
-            minHeight: 120,
+            minHeight: isMobile ? 140 : 120,
             borderRadius: 'var(--radius-lg)',
             border: '1px solid var(--separator)',
-            background: 'rgba(0,0,0,0.16)',
+            background: isMobile ? 'var(--bg)' : 'rgba(0,0,0,0.16)',
             color: 'var(--text-primary)',
             padding: 'var(--space-3)',
             resize: 'vertical',
@@ -1038,7 +1052,7 @@ function ChatPanel() {
           </details>
         )}
 
-        <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+        <div style={{ display: 'grid', gap: 'var(--space-2)' }}>
           <Button
             variant="secondary"
             onClick={async () => {
@@ -1199,6 +1213,7 @@ function ChatPanel() {
                 setIsSubmitting(false);
               }
             }}
+            className={isMobile ? 'w-full justify-center' : undefined}
           >
             {isSubmitting ? 'Drafting...' : 'Draft proposal'}
           </Button>
@@ -1211,13 +1226,14 @@ function ChatPanel() {
               setPrompt('');
               setWorkspacePath(context.starterWorkspacePath ?? '');
             }}
+            className={isMobile ? 'w-full justify-center' : undefined}
           >
             Reset
           </Button>
         </div>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 var(--space-4) var(--space-4)' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '0 var(--space-4) var(--space-4)' : '0 var(--space-4) var(--space-4)' }}>
         <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
           {messages.map((message, index) => (
             <div
@@ -1228,9 +1244,17 @@ function ChatPanel() {
                 padding: 'var(--space-3)',
                 borderRadius: 'var(--radius-lg)',
                 background:
-                  message.role === 'user' ? 'var(--accent-fill)' : 'var(--material-thin)',
+                  message.role === 'user'
+                    ? isMobile
+                      ? 'color-mix(in srgb, var(--accent) 18%, var(--bg-secondary))'
+                      : 'var(--accent-fill)'
+                    : isMobile
+                      ? 'var(--bg-tertiary)'
+                      : 'var(--material-thin)',
                 color:
-                  message.role === 'user' ? 'var(--accent)' : 'var(--text-secondary)',
+                  message.role === 'user'
+                    ? isMobile ? 'var(--text-primary)' : 'var(--accent)'
+                    : 'var(--text-secondary)',
                 border: '1px solid var(--separator)',
                 whiteSpace: 'pre-wrap',
               }}
@@ -1250,7 +1274,9 @@ function ChatPanel() {
                 border: '1px solid var(--separator)',
                 borderRadius: 'var(--radius-xl)',
                 padding: 'var(--space-4)',
-                background: 'linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.12))',
+                background: isMobile
+                  ? 'var(--bg-secondary)'
+                  : 'linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.12))',
                 display: 'grid',
                 gap: 'var(--space-2)',
               }}
@@ -1359,10 +1385,15 @@ function ChatPanel() {
                       setIsSubmitting(false);
                     }
                   }}
+                  className={isMobile ? 'w-full justify-center' : undefined}
                 >
                   {isSubmitting ? 'Creating...' : 'Confirm'}
                 </Button>
-                <Button variant="ghost" onClick={() => setProposal(null)}>
+                <Button
+                  variant="ghost"
+                  onClick={() => setProposal(null)}
+                  className={isMobile ? 'w-full justify-center' : undefined}
+                >
                   Keep editing
                 </Button>
               </div>
