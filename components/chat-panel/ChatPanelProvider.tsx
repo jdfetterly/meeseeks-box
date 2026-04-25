@@ -1423,7 +1423,7 @@ const conversationMetaStyle: CSSProperties = {
   border: '1px solid var(--separator)',
   borderRadius: 'var(--radius-lg)',
   padding: 'var(--space-3)',
-  background: 'rgba(255,255,255,0.02)',
+  background: 'var(--bg-secondary)',
   display: 'grid',
   gap: '4px',
 };
@@ -1432,7 +1432,7 @@ const advancedStyle: CSSProperties = {
   border: '1px solid var(--separator)',
   borderRadius: 'var(--radius-lg)',
   padding: 'var(--space-3)',
-  background: 'rgba(255,255,255,0.02)',
+  background: 'var(--bg-secondary)',
 };
 
 const summaryStyle: CSSProperties = {
@@ -1447,7 +1447,7 @@ const inputStyle: CSSProperties = {
   minHeight: 44,
   borderRadius: 'var(--radius-lg)',
   border: '1px solid var(--separator)',
-  background: 'rgba(0,0,0,0.12)',
+  background: 'var(--bg)',
   color: 'var(--text-primary)',
   padding: '0 var(--space-3)',
 };
@@ -1493,7 +1493,12 @@ export function ChatPanelProvider({ children }: { children: ReactNode }) {
 
   return (
     <ChatPanelContext.Provider value={value}>
-      {children}
+      <div
+        aria-hidden={isMobile && state.isOpen}
+        style={isMobile && state.isOpen ? { visibility: 'hidden', pointerEvents: 'none' } : undefined}
+      >
+        {children}
+      </div>
       {isMobile && !state.isOpen ? (
         <Button
           onClick={() => value.openPanel({ intent: 'general_chat', context: { page: 'mobile' } })}
