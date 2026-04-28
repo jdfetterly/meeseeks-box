@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { ChatPanelProvider } from '@/components/chat-panel/ChatPanelProvider';
 import { Sidebar } from '@/components/Sidebar';
 
@@ -9,7 +10,12 @@ export function ShellLayoutClient({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
   const [isDesktop, setIsDesktop] = useState(true);
+
+  if (pathname.startsWith('/mobile')) {
+    return <>{children}</>;
+  }
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(min-width: 768px)');
