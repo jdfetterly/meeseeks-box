@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap');
 @import "tailwindcss";
 @import "@xyflow/react/dist/style.css";
 
@@ -83,6 +84,14 @@
   --animate-pulse-red: pulse-red 1.5s ease-in-out infinite;
   --animate-blink: blink-cursor 1s step-end infinite;
   --animate-float-hint: float-hint 2s ease-in-out infinite;
+}
+
+/* ============================================
+   Mobile app animations
+   ============================================ */
+@keyframes mb-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
 }
 
 /* ============================================
