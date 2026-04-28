@@ -13,10 +13,6 @@ export function ShellLayoutClient({
   const pathname = usePathname();
   const [isDesktop, setIsDesktop] = useState(true);
 
-  if (pathname.startsWith('/mobile')) {
-    return <>{children}</>;
-  }
-
   useEffect(() => {
     const mediaQuery = window.matchMedia('(min-width: 768px)');
     const sync = () => setIsDesktop(mediaQuery.matches);
@@ -28,6 +24,10 @@ export function ShellLayoutClient({
       mediaQuery.removeEventListener('change', sync);
     };
   }, []);
+
+  if (pathname.startsWith('/mobile')) {
+    return <>{children}</>;
+  }
 
   return (
     <ChatPanelProvider>
