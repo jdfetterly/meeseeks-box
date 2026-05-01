@@ -12,6 +12,24 @@ interface ChatSheetProps {
   title: string;
 }
 
+interface ApiMessage {
+  id: string;
+  role: string;
+  content_text?: string | null;
+  contentText?: string | null;
+  created_at?: string;
+  createdAt?: string;
+}
+
+function mapApiMessage(message: ApiMessage): MobileMessage {
+  return {
+    id: message.id,
+    role: message.role as MobileMessage['role'],
+    content: message.contentText ?? message.content_text ?? '…',
+    createdAt: message.createdAt ?? message.created_at ?? new Date().toISOString(),
+  };
+}
+
 function SendIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -37,31 +55,35 @@ export function ChatSheet({ open, onClose, conversationId, title }: ChatSheetPro
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!open || !conversationId) return;
+    if (!open || !conversationId) {
+      setMessages([]);
+      setValue('');
+      return;
+    }
+
+    setMessages([]);
+    setValue('');
     fetch(`/api/product-state/conversations/${conversationId}/messages`)
       .then((r) => (r.ok ? r.json() : { messages: [] }))
-      .then((data: { messages?: Array<{ id: string; role: string; content_text?: string | null; created_at: string }> }) => {
-        setMessages(
-          (data.messages ?? []).map((m) => ({
-            id: m.id,
-            role: m.role as MobileMessage['role'],
-            content: m.content_text ?? '…',
-            createdAt: m.created_at,
-          })),
-        );
+      .then((data: { messages?: ApiMessage[] }) => {
+        setMessages((data.messages ?? []).map(mapApiMessage));
       })
       .catch(() => setMessages([]));
   }, [open, conversationId]);
 
   useEffect(() => {
     if (open) {
-      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'instant' }), 50);
+      setTimeout(() => {
+        if (typeof bottomRef.current?.scrollIntoView === 'function') {
+          bottomRef.current.scrollIntoView();
+        }
+      }, 50);
     }
   }, [open, messages.length]);
 
   async function handleSend() {
     const trimmed = value.trim();
-    if (!trimmed || sending) return;
+    if (!trimmed || sending || !conversationId) return;
     setValue('');
     setSending(true);
 
@@ -74,13 +96,23 @@ export function ChatSheet({ open, onClose, conversationId, title }: ChatSheetPro
     setMessages((prev) => [...prev, optimistic]);
 
     try {
-      await fetch(`/api/product-state/conversations/${conversationId}/messages`, {
+      const response = await fetch(`/api/product-state/conversations/${conversationId}/messages`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ role: 'user', contentText: trimmed }),
       });
+      if (!response.ok) {
+        throw new Error('Message send failed');
+      }
+
+      const refreshed = await fetch(`/api/product-state/conversations/${conversationId}/messages`)
+        .then((r) => (r.ok ? r.json() : { messages: [] }))
+        .catch(() => ({ messages: [] }));
+      setMessages(
+        (refreshed as { messages?: ApiMessage[] }).messages?.map(mapApiMessage) ?? [optimistic],
+      );
     } catch {
-      // ignore
+      setMessages((prev) => prev.filter((msg) => msg.id !== optimistic.id));
     } finally {
       setSending(false);
     }

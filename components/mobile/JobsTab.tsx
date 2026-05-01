@@ -1,7 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import type { MobileJob, ActiveSheet } from './types';
 import { MB } from './tokens';
+
+interface ApiApproval {
+  id: string;
+  runId: string | null;
+  status: string;
+}
 
 function CheckIcon() {
   return (
@@ -37,20 +44,20 @@ const sectionLabel = (color: string, text: string, count: number) => (
   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
     <span
       style={{
-        fontSize: '10px',
-        fontWeight: 400,
+        fontSize: '12px',
+        fontWeight: 700,
         color,
         textTransform: 'uppercase',
-        letterSpacing: '0.1em',
-        fontFamily: MB.font,
+        letterSpacing: '0.07em',
+        fontFamily: MB.mono,
       }}
     >
       {text}
     </span>
     <span
       style={{
-        fontSize: '10px',
-        fontWeight: 500,
+        fontSize: '12px',
+        fontWeight: 700,
         color,
         background: color === MB.green ? MB.greenBg : color === MB.orange ? MB.orangeBg : MB.redBg,
         border: `1px solid ${color === MB.green ? MB.greenBorder : color === MB.orange ? MB.orangeBorder : MB.redBorder}`,
@@ -65,12 +72,52 @@ const sectionLabel = (color: string, text: string, count: number) => (
 );
 
 export function JobsTab({ jobs, onDismissWaiting, onOpenSheet }: JobsTabProps) {
+  const [resolvingIds, setResolvingIds] = useState<Record<string, boolean>>({});
   const waitingJobs = jobs.filter((j) => j.status === 'waiting');
   const runningJobs = jobs.filter((j) => j.status === 'running');
   const failedJobs = jobs.filter((j) => j.status === 'failed');
 
+  async function handleApprove(job: MobileJob) {
+    if (resolvingIds[job.id]) {
+      return;
+    }
+
+    setResolvingIds((prev) => ({ ...prev, [job.id]: true }));
+
+    try {
+      const approvalsResponse = await fetch('/api/product-state/approvals');
+      const approvalsPayload = (await approvalsResponse.json()) as { approvals?: ApiApproval[] };
+      const approval = (approvalsPayload.approvals ?? []).find((item) => item.runId === job.id && item.status === 'pending');
+
+      if (!approval) {
+        onDismissWaiting(job.id);
+        return;
+      }
+
+      const resolveResponse = await fetch(`/api/product-state/approvals/${approval.id}/resolve`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ decision: 'allow-once' }),
+      });
+
+      if (!resolveResponse.ok) {
+        throw new Error(`Failed to resolve approval ${approval.id}`);
+      }
+
+      onDismissWaiting(job.id);
+    } catch (error) {
+      console.error('Failed to resolve waiting job approval', error);
+    } finally {
+      setResolvingIds((prev) => {
+        const next = { ...prev };
+        delete next[job.id];
+        return next;
+      });
+    }
+  }
+
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, minWidth: 0, width: '100%', maxWidth: '100%' }}>
       {/* Header */}
       <header
         style={{
@@ -78,18 +125,18 @@ export function JobsTab({ jobs, onDismissWaiting, onOpenSheet }: JobsTabProps) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '10px 14px 8px',
-          height: '42px',
+          padding: '18px 18px 12px',
+          minHeight: '64px',
         }}
       >
         <span
           style={{
-            fontSize: '10px',
-            fontWeight: 400,
+            fontSize: '14px',
+            fontWeight: 750,
             color: MB.textMuted,
             textTransform: 'uppercase',
-            letterSpacing: '0.1em',
-            fontFamily: MB.font,
+            letterSpacing: '0.06em',
+            fontFamily: MB.mono,
           }}
         >
           jobs
@@ -98,8 +145,8 @@ export function JobsTab({ jobs, onDismissWaiting, onOpenSheet }: JobsTabProps) {
           {waitingJobs.length > 0 && (
             <span
               style={{
-                fontSize: '10px',
-                fontWeight: 500,
+                fontSize: '12px',
+                fontWeight: 700,
                 color: MB.orange,
                 background: MB.orangeBg,
                 border: `1px solid ${MB.orangeBorder}`,
@@ -114,8 +161,8 @@ export function JobsTab({ jobs, onDismissWaiting, onOpenSheet }: JobsTabProps) {
           {failedJobs.length > 0 && (
             <span
               style={{
-                fontSize: '10px',
-                fontWeight: 500,
+                fontSize: '12px',
+                fontWeight: 700,
                 color: MB.red,
                 background: MB.redBg,
                 border: `1px solid ${MB.redBorder}`,
@@ -131,21 +178,21 @@ export function JobsTab({ jobs, onDismissWaiting, onOpenSheet }: JobsTabProps) {
       </header>
 
       {/* Scrollable body */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 14px', display: 'grid', gap: '14px', alignContent: 'start', paddingBottom: '14px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 18px', display: 'grid', gap: '20px', alignContent: 'start', paddingBottom: '22px' }}>
 
         {/* Waiting on you */}
         {waitingJobs.length > 0 && (
           <section>
             {sectionLabel(MB.orange, 'waiting on you', waitingJobs.length)}
-            <div style={{ display: 'grid', gap: '6px' }}>
+            <div style={{ display: 'grid', gap: '10px' }}>
               {waitingJobs.map((job) => (
                 <div
                   key={job.id}
                   style={{
                     background: MB.bgCard,
                     border: `1px solid ${MB.border}`,
-                    borderRadius: '10px',
-                    padding: '10px 12px',
+                    borderRadius: '14px',
+                    padding: '15px 16px',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '10px',
@@ -154,8 +201,8 @@ export function JobsTab({ jobs, onDismissWaiting, onOpenSheet }: JobsTabProps) {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div
                       style={{
-                        fontSize: '12px',
-                        fontWeight: 500,
+                        fontSize: '16px',
+                        fontWeight: 700,
                         color: MB.text,
                         fontFamily: MB.font,
                         whiteSpace: 'nowrap',
@@ -167,7 +214,7 @@ export function JobsTab({ jobs, onDismissWaiting, onOpenSheet }: JobsTabProps) {
                     </div>
                     <div
                       style={{
-                        fontSize: '10px',
+                        fontSize: '14px',
                         color: MB.green,
                         fontFamily: MB.font,
                         marginTop: '2px',
@@ -181,11 +228,12 @@ export function JobsTab({ jobs, onDismissWaiting, onOpenSheet }: JobsTabProps) {
                   </div>
                   <button
                     type="button"
-                    onClick={() => onDismissWaiting(job.id)}
+                    onClick={() => handleApprove(job)}
                     aria-label="Approve"
+                    disabled={Boolean(resolvingIds[job.id])}
                     style={{
-                      width: '30px',
-                      height: '30px',
+                      width: '44px',
+                      height: '44px',
                       borderRadius: '999px',
                       border: 'none',
                       background: MB.green,
@@ -194,6 +242,7 @@ export function JobsTab({ jobs, onDismissWaiting, onOpenSheet }: JobsTabProps) {
                       justifyContent: 'center',
                       cursor: 'pointer',
                       flexShrink: 0,
+                      opacity: resolvingIds[job.id] ? 0.7 : 1,
                     }}
                   >
                     <CheckIcon />
@@ -208,7 +257,7 @@ export function JobsTab({ jobs, onDismissWaiting, onOpenSheet }: JobsTabProps) {
         {runningJobs.length > 0 && (
           <section>
             {sectionLabel(MB.green, 'running', runningJobs.length)}
-            <div style={{ display: 'grid', gap: '6px' }}>
+            <div style={{ display: 'grid', gap: '10px' }}>
               {runningJobs.map((job) => (
                 <button
                   key={job.id}
@@ -217,6 +266,7 @@ export function JobsTab({ jobs, onDismissWaiting, onOpenSheet }: JobsTabProps) {
                     onOpenSheet({
                       kind: 'failed-job',
                       runId: job.id,
+                      conversationId: job.conversationId,
                       name: job.name,
                       errorText: job.errorText ?? '',
                       recommendation: job.recommendation,
@@ -225,8 +275,8 @@ export function JobsTab({ jobs, onDismissWaiting, onOpenSheet }: JobsTabProps) {
                   style={{
                     background: MB.bgCard,
                     border: `1px solid ${MB.border}`,
-                    borderRadius: '10px',
-                    padding: '10px 12px',
+                    borderRadius: '14px',
+                    padding: '15px 16px',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '10px',
@@ -239,8 +289,8 @@ export function JobsTab({ jobs, onDismissWaiting, onOpenSheet }: JobsTabProps) {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div
                       style={{
-                        fontSize: '12px',
-                        fontWeight: 500,
+                        fontSize: '16px',
+                        fontWeight: 700,
                         color: MB.text,
                         fontFamily: MB.font,
                         whiteSpace: 'nowrap',
@@ -250,7 +300,7 @@ export function JobsTab({ jobs, onDismissWaiting, onOpenSheet }: JobsTabProps) {
                     >
                       {job.name}
                     </div>
-                    <div style={{ fontSize: '10px', color: MB.textMuted, fontFamily: MB.font, marginTop: '2px' }}>
+                    <div style={{ fontSize: '14px', color: MB.textMuted, fontFamily: MB.font, marginTop: '4px' }}>
                       {job.statusText}
                     </div>
                   </div>
@@ -267,7 +317,7 @@ export function JobsTab({ jobs, onDismissWaiting, onOpenSheet }: JobsTabProps) {
         {failedJobs.length > 0 && (
           <section>
             {sectionLabel(MB.red, 'failed', failedJobs.length)}
-            <div style={{ display: 'grid', gap: '6px' }}>
+            <div style={{ display: 'grid', gap: '10px' }}>
               {failedJobs.map((job) => (
                 <button
                   key={job.id}
@@ -276,6 +326,7 @@ export function JobsTab({ jobs, onDismissWaiting, onOpenSheet }: JobsTabProps) {
                     onOpenSheet({
                       kind: 'failed-job',
                       runId: job.id,
+                      conversationId: job.conversationId,
                       name: job.name,
                       errorText: job.errorText ?? 'Unknown error',
                       recommendation: job.recommendation,
@@ -284,8 +335,8 @@ export function JobsTab({ jobs, onDismissWaiting, onOpenSheet }: JobsTabProps) {
                   style={{
                     background: MB.bgCard,
                     border: `1px solid ${MB.border}`,
-                    borderRadius: '10px',
-                    padding: '10px 12px',
+                    borderRadius: '14px',
+                    padding: '15px 16px',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '10px',
@@ -306,8 +357,8 @@ export function JobsTab({ jobs, onDismissWaiting, onOpenSheet }: JobsTabProps) {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div
                       style={{
-                        fontSize: '12px',
-                        fontWeight: 500,
+                        fontSize: '16px',
+                        fontWeight: 700,
                         color: MB.text,
                         fontFamily: MB.font,
                         whiteSpace: 'nowrap',
@@ -319,7 +370,7 @@ export function JobsTab({ jobs, onDismissWaiting, onOpenSheet }: JobsTabProps) {
                     </div>
                     <div
                       style={{
-                        fontSize: '10px',
+                        fontSize: '14px',
                         color: MB.red,
                         fontFamily: MB.font,
                         marginTop: '2px',
@@ -343,14 +394,14 @@ export function JobsTab({ jobs, onDismissWaiting, onOpenSheet }: JobsTabProps) {
         {jobs.length === 0 && (
           <div
             style={{
-              fontSize: '11px',
-              color: MB.textMuted,
+              fontSize: '15px',
+              color: MB.textSecondary,
               fontFamily: MB.font,
-              padding: '24px',
+              padding: '28px 20px',
               textAlign: 'center',
               background: MB.bgCard,
               border: `1px solid ${MB.border}`,
-              borderRadius: '10px',
+              borderRadius: '14px',
             }}
           >
             no active jobs

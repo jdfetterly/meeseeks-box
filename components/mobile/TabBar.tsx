@@ -12,7 +12,7 @@ interface TabBarProps {
 
 function TerminalIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <svg width="24" height="24" viewBox="0 0 20 20" fill="none">
       <path d="M3 5l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M11 15h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
@@ -21,7 +21,7 @@ function TerminalIcon() {
 
 function BriefcaseIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <svg width="24" height="24" viewBox="0 0 20 20" fill="none">
       <rect x="2" y="7" width="16" height="11" rx="2" stroke="currentColor" strokeWidth="1.5" />
       <path d="M7 7V5a3 3 0 0 1 6 0v2" stroke="currentColor" strokeWidth="1.5" />
       <path d="M2 11h16" stroke="currentColor" strokeWidth="1.5" />
@@ -31,7 +31,7 @@ function BriefcaseIcon() {
 
 function LayersIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <svg width="24" height="24" viewBox="0 0 20 20" fill="none">
       <rect x="3" y="4" width="14" height="3" rx="1" stroke="currentColor" strokeWidth="1.5" />
       <rect x="3" y="9" width="14" height="3" rx="1" stroke="currentColor" strokeWidth="1.5" />
       <rect x="3" y="14" width="14" height="3" rx="1" stroke="currentColor" strokeWidth="1.5" />
@@ -53,13 +53,13 @@ export function TabBar({ active, onChange, waitingJobCount }: TabBarProps) {
         position: 'relative',
         flexShrink: 0,
         display: 'flex',
-        height: '48px',
+        height: '64px',
         background: MB.bgDeep,
         borderTop: `1px solid ${MB.border}`,
         fontFamily: MB.font,
       }}
     >
-      {TABS.map(({ id, Icon }) => {
+      {TABS.map(({ id, Icon, label }) => {
         const isActive = active === id;
         return (
           <button
@@ -73,21 +73,31 @@ export function TabBar({ active, onChange, waitingJobCount }: TabBarProps) {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '0px',
+              gap: '4px',
               border: 'none',
               background: 'transparent',
               color: isActive ? MB.green : MB.textMuted,
               cursor: 'pointer',
               position: 'relative',
-              paddingBottom: '0px',
+              paddingBottom: '6px',
             }}
           >
             <Icon />
+            <span
+              style={{
+                fontSize: '11px',
+                fontWeight: 650,
+                fontFamily: MB.font,
+                lineHeight: 1,
+              }}
+            >
+              {label}
+            </span>
             {isActive && (
               <div
                 style={{
                   position: 'absolute',
-                  bottom: 0,
+                  bottom: '4px',
                   left: '50%',
                   transform: 'translateX(-50%)',
                   width: '20px',

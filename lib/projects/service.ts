@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { generateId } from '@/lib/id';
@@ -25,9 +26,21 @@ import {
   upsertProjectWorkspace,
 } from '@/lib/product-state/repositories';
 
+export interface ProjectGitStatusRecord {
+  isGitRepo: boolean;
+  currentBranch: string | null;
+  lastCommitShort: string | null;
+  lastCommitMessage: string | null;
+  lastCommitAt: string | null;
+  remoteUrl: string | null;
+  modifiedCount: number;
+  untrackedCount: number;
+}
+
 export interface ProjectDetailRecord {
   project: ProjectRecord;
   workspace: ProjectWorkspaceRecord | null;
+  git: ProjectGitStatusRecord | null;
   playbook: ProjectPlaybookRecord | null;
   workItems: WorkItemSummaryRecord[];
   reviewItems: ReviewItemRecord[];
@@ -57,6 +70,55 @@ function slugifyProjectTitle(value: string) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 64) || 'project';
+}
+
+function runGit(workspacePath: string, args: string[]) {
+  try {
+    return execFileSync('git', ['-C', workspacePath, ...args], {
+      encoding: 'utf8',
+      timeout: 1500,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    return null;
+  }
+}
+
+function getProjectGitStatus(workspace: ProjectWorkspaceRecord | null): ProjectGitStatusRecord | null {
+  if (!workspace || !existsSync(workspace.workspacePath)) {
+    return null;
+  }
+
+  const isGitRepo = runGit(workspace.workspacePath, ['rev-parse', '--is-inside-work-tree']) === 'true';
+
+  if (!isGitRepo) {
+    return {
+      isGitRepo: false,
+      currentBranch: null,
+      lastCommitShort: null,
+      lastCommitMessage: null,
+      lastCommitAt: null,
+      remoteUrl: null,
+      modifiedCount: 0,
+      untrackedCount: 0,
+    };
+  }
+
+  const statusLines = (runGit(workspace.workspacePath, ['status', '--porcelain']) ?? '')
+    .split('\n')
+    .map((line) => line.trimEnd())
+    .filter(Boolean);
+
+  return {
+    isGitRepo: true,
+    currentBranch: runGit(workspace.workspacePath, ['branch', '--show-current']),
+    lastCommitShort: runGit(workspace.workspacePath, ['rev-parse', '--short', 'HEAD']),
+    lastCommitMessage: runGit(workspace.workspacePath, ['log', '-1', '--format=%s']),
+    lastCommitAt: runGit(workspace.workspacePath, ['log', '-1', '--format=%cI']),
+    remoteUrl: runGit(workspace.workspacePath, ['config', '--get', 'remote.origin.url']),
+    modifiedCount: statusLines.filter((line) => !line.startsWith('??')).length,
+    untrackedCount: statusLines.filter((line) => line.startsWith('??')).length,
+  };
 }
 
 function resolveWorkspaceRoot(rootDir: string) {
@@ -155,6 +217,7 @@ export function getProjectDetail(projectId: string, rootDir = process.cwd()): Pr
   return {
     project,
     workspace,
+    git: getProjectGitStatus(workspace),
     playbook,
     workItems,
     reviewItems,

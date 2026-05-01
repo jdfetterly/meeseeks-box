@@ -17,5 +17,6 @@ export const MB = {
   red: '#e05252',
   redBg: 'rgba(224,82,82,0.07)',
   redBorder: 'rgba(224,82,82,0.35)',
-  font: "'JetBrains Mono', 'Courier New', monospace",
+  font: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, sans-serif",
+  mono: "'SF Mono', 'JetBrains Mono', 'Courier New', monospace",
 } as const;
