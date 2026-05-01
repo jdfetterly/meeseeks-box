@@ -38,7 +38,7 @@ function ChevronUpIcon() {
 
 function FolderIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+    <svg width="16" height="16" viewBox="0 0 13 13" fill="none">
       <path d="M1 3a1 1 0 0 1 1-1h3l1.5 2H11a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3z" stroke="currentColor" strokeWidth="1.2" />
     </svg>
   );
@@ -46,7 +46,7 @@ function FolderIcon() {
 
 function ChatIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+    <svg width="20" height="20" viewBox="0 0 14 14" fill="none">
       <path d="M12 7a5 5 0 0 1-5 5H3l-1 1V7a5 5 0 0 1 5-5 5 5 0 0 1 5 5z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
     </svg>
   );
@@ -93,7 +93,7 @@ function ApprovalCard({
       style={{
         background: MB.bgCard,
         border: `1px solid ${MB.border}`,
-        borderRadius: '10px',
+        borderRadius: '14px',
         overflow: 'hidden',
       }}
     >
@@ -104,7 +104,7 @@ function ApprovalCard({
           width: '100%',
           background: 'transparent',
           border: 'none',
-          padding: '10px 12px 8px',
+          padding: '14px 16px 12px',
           cursor: 'pointer',
           textAlign: 'left',
           display: 'flex',
@@ -113,7 +113,7 @@ function ApprovalCard({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
-          <span style={{ fontSize: '13px', fontWeight: 500, color: MB.text, fontFamily: MB.font, lineHeight: 1.3 }}>
+          <span style={{ fontSize: '16px', fontWeight: 650, color: MB.text, fontFamily: MB.font, lineHeight: 1.25 }}>
             {approval.title}
           </span>
           <span style={{ color: MB.textMuted, flexShrink: 0, marginTop: '2px' }}>
@@ -127,20 +127,20 @@ function ApprovalCard({
             gap: '6px',
             background: MB.greenBg,
             border: `1px solid ${MB.greenBorder}`,
-            borderRadius: '6px',
-            padding: '4px 8px',
+            borderRadius: '8px',
+            padding: '6px 9px',
           }}
         >
-          <span style={{ color: MB.green, fontSize: '10px', fontFamily: MB.font }}>→</span>
-          <span style={{ color: MB.green, fontSize: '10px', fontFamily: MB.font }}>
+          <span style={{ color: MB.green, fontSize: '12px', fontFamily: MB.mono }}>→</span>
+          <span style={{ color: MB.green, fontSize: '13px', fontFamily: MB.font, lineHeight: 1.3 }}>
             {approval.recommendation}
           </span>
         </div>
       </button>
 
       {expanded && (
-        <div style={{ padding: '0 12px 8px', display: 'grid', gap: '6px' }}>
-          <p style={{ margin: 0, fontSize: '11px', color: MB.textSecondary, fontFamily: MB.font, lineHeight: 1.5 }}>
+        <div style={{ padding: '0 16px 12px', display: 'grid', gap: '8px' }}>
+          <p style={{ margin: 0, fontSize: '14px', color: MB.textSecondary, fontFamily: MB.font, lineHeight: 1.45 }}>
             {approval.description}
           </p>
           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
@@ -148,7 +148,7 @@ function ApprovalCard({
               <span
                 key={tag}
                 style={{
-                  fontSize: '9px',
+                  fontSize: '11px',
                   fontWeight: 400,
                   color: MB.textMuted,
                   background: `rgba(255,255,255,0.04)`,
@@ -157,7 +157,7 @@ function ApprovalCard({
                   padding: '2px 7px',
                   textTransform: 'uppercase',
                   letterSpacing: '0.08em',
-                  fontFamily: MB.font,
+                  fontFamily: MB.mono,
                 }}
               >
                 {tag}
@@ -172,7 +172,7 @@ function ApprovalCard({
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
-          padding: '8px 12px 10px',
+          padding: '10px 16px 14px',
           borderTop: `1px solid ${MB.border}`,
         }}
       >
@@ -182,8 +182,8 @@ function ApprovalCard({
           onClick={onSkip}
           aria-label="Skip"
           style={{
-            width: '32px',
-            height: '32px',
+            width: '44px',
+            height: '44px',
             borderRadius: '999px',
             border: `1px solid ${MB.borderStrong}`,
             background: 'transparent',
@@ -201,8 +201,8 @@ function ApprovalCard({
           onClick={onApprove}
           aria-label="Approve"
           style={{
-            width: '32px',
-            height: '32px',
+            width: '44px',
+            height: '44px',
             borderRadius: '999px',
             border: 'none',
             background: MB.green,
@@ -233,7 +233,7 @@ export function CommandTab({ approvals, conversation, activeProject, onApprove, 
   }
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, minWidth: 0, width: '100%', maxWidth: '100%' }}>
       {/* Header */}
       <header
         style={{
@@ -241,67 +241,101 @@ export function CommandTab({ approvals, conversation, activeProject, onApprove, 
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '10px 14px 8px',
-          height: '42px',
+          padding: '14px 18px 10px',
+          minHeight: '76px',
+          gap: '14px',
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            background: MB.greenBg,
-            border: `1px solid ${MB.greenBorder}`,
-            borderRadius: '999px',
-            padding: '3px 10px',
-          }}
-        >
+        <div style={{ minWidth: 0, display: 'grid', gap: '5px' }}>
           <div
             style={{
-              width: '6px',
-              height: '6px',
+              width: 'fit-content',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '7px',
+              background: MB.greenBg,
+              border: `1px solid ${MB.greenBorder}`,
               borderRadius: '999px',
-              background: MB.green,
+              padding: '4px 10px',
             }}
-          />
-          <span style={{ fontSize: '10px', color: MB.green, fontFamily: MB.font }}>connected</span>
+          >
+            <div
+              style={{
+                width: '7px',
+                height: '7px',
+                borderRadius: '999px',
+                background: MB.green,
+              }}
+            />
+            <span style={{ fontSize: '12px', color: MB.green, fontFamily: MB.font, fontWeight: 650 }}>connected</span>
+          </div>
+          <h1
+            style={{
+              margin: 0,
+              color: MB.text,
+              fontFamily: MB.font,
+              fontSize: '21px',
+              fontWeight: 720,
+              lineHeight: 1.1,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {activeProject?.title ?? 'Project'}
+          </h1>
         </div>
         <button
           type="button"
           onClick={() => onOpenSheet({ kind: 'project-switcher' })}
+          aria-label="Switch project"
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '5px',
+            gap: '7px',
             background: MB.bgCard,
             border: `1px solid ${MB.borderStrong}`,
             borderRadius: '999px',
-            padding: '3px 10px',
+            padding: '0 12px',
+            minHeight: '42px',
             cursor: 'pointer',
             color: MB.textSecondary,
+            flexShrink: 0,
           }}
         >
           <FolderIcon />
-          <span style={{ fontSize: '11px', color: MB.textSecondary, fontFamily: MB.font }}>
-            {activeProject?.title ?? 'No project'}
+          <span style={{ fontSize: '14px', color: MB.textSecondary, fontFamily: MB.font, fontWeight: 600 }}>
+            Switch
           </span>
           <ChevronDownSmall />
         </button>
       </header>
 
       {/* Scrollable body */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 14px', display: 'grid', gap: '14px', alignContent: 'start', paddingBottom: '14px' }}>
+      <div
+        style={{
+          flex: 1,
+          minWidth: 0,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          padding: '4px 18px 0',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '22px',
+          paddingBottom: '22px',
+        }}
+      >
         {/* Needs your input section */}
-        <section>
+        <section style={{ minWidth: 0, width: '100%' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
             <span
               style={{
-                fontSize: '10px',
-                fontWeight: 400,
+                fontSize: '12px',
+                fontWeight: 700,
                 color: MB.textMuted,
                 textTransform: 'uppercase',
-                letterSpacing: '0.1em',
-                fontFamily: MB.font,
+                letterSpacing: '0.07em',
+                fontFamily: MB.mono,
               }}
             >
               needs your input
@@ -309,8 +343,8 @@ export function CommandTab({ approvals, conversation, activeProject, onApprove, 
             {approvals.length > 0 && (
               <span
                 style={{
-                  fontSize: '10px',
-                  fontWeight: 500,
+                  fontSize: '12px',
+                  fontWeight: 700,
                   color: MB.orange,
                   background: MB.orangeBg,
                   border: `1px solid ${MB.orangeBorder}`,
@@ -326,17 +360,18 @@ export function CommandTab({ approvals, conversation, activeProject, onApprove, 
           {approvals.length === 0 ? (
             <div
               style={{
-                fontSize: '11px',
-                color: MB.textMuted,
+                fontSize: '15px',
+                color: MB.textSecondary,
                 fontFamily: MB.font,
-                padding: '12px',
+                padding: '18px 16px',
                 background: MB.bgCard,
                 border: `1px solid ${MB.border}`,
-                borderRadius: '10px',
+                borderRadius: '14px',
                 textAlign: 'center',
+                lineHeight: 1.35,
               }}
             >
-              all clear
+              All clear. Start the next move from the command bar.
             </div>
           ) : (
             <div style={{ display: 'grid', gap: '8px' }}>
@@ -354,16 +389,16 @@ export function CommandTab({ approvals, conversation, activeProject, onApprove, 
 
         {/* Recent chat section */}
         {conversation && (
-          <section>
+          <section style={{ minWidth: 0, width: '100%' }}>
             <div style={{ marginBottom: '8px' }}>
               <span
-                style={{
-                  fontSize: '10px',
-                  fontWeight: 400,
+              style={{
+                  fontSize: '12px',
+                  fontWeight: 700,
                   color: MB.textMuted,
                   textTransform: 'uppercase',
-                  letterSpacing: '0.1em',
-                  fontFamily: MB.font,
+                  letterSpacing: '0.07em',
+                  fontFamily: MB.mono,
                 }}
               >
                 recent chat
@@ -376,59 +411,69 @@ export function CommandTab({ approvals, conversation, activeProject, onApprove, 
               }
               style={{
                 width: '100%',
+                minWidth: 0,
+                maxWidth: '100%',
+                boxSizing: 'border-box',
+                overflow: 'hidden',
                 background: MB.bgCard,
                 border: `1px solid ${MB.border}`,
-                borderRadius: '10px',
-                padding: '10px 12px',
+                borderRadius: '16px',
+                padding: '16px',
                 display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
+                alignItems: 'flex-start',
+                gap: '13px',
                 cursor: 'pointer',
                 textAlign: 'left',
               }}
             >
-              <span style={{ color: MB.textMuted, display: 'flex' }}>
+              <span style={{ color: MB.textMuted, display: 'flex', paddingTop: '2px' }}>
                 <ChatIcon />
               </span>
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
                 <div
                   style={{
-                    fontSize: '12px',
-                    fontWeight: 500,
+                    fontSize: '16px',
+                    fontWeight: 700,
                     color: MB.text,
                     fontFamily: MB.font,
-                    whiteSpace: 'nowrap',
+                    lineHeight: 1.25,
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
                     overflow: 'hidden',
-                    textOverflow: 'ellipsis',
                   }}
                 >
                   {conversation.title}
                 </div>
                 <div
                   style={{
-                    fontSize: '11px',
-                    color: MB.textMuted,
+                    fontSize: '14px',
+                    color: MB.textSecondary,
                     fontFamily: MB.font,
-                    whiteSpace: 'nowrap',
+                    lineHeight: 1.35,
+                    marginTop: '5px',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
                     overflow: 'hidden',
-                    textOverflow: 'ellipsis',
                   }}
                 >
                   {conversation.lastMessage}
                 </div>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px', flexShrink: 0 }}>
-                <span style={{ fontSize: '10px', color: MB.textMuted, fontFamily: MB.font }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px', flexShrink: 0, minWidth: 0 }}>
+                <span style={{ fontSize: '12px', color: MB.textMuted, fontFamily: MB.font, whiteSpace: 'nowrap' }}>
                   {formatTime(conversation.updatedAt)}
                 </span>
                 <span
                   style={{
-                    fontSize: '10px',
+                    fontSize: '13px',
+                    fontWeight: 700,
                     color: MB.green,
                     background: MB.greenBg,
                     border: `1px solid ${MB.greenBorder}`,
                     borderRadius: '999px',
-                    padding: '2px 8px',
+                    padding: '5px 10px',
                     fontFamily: MB.font,
                     display: 'flex',
                     alignItems: 'center',

@@ -47,5 +47,12 @@ export type ActiveTab = 'command' | 'jobs' | 'context';
 export type ActiveSheet =
   | null
   | { kind: 'chat'; conversationId: string; title: string }
-  | { kind: 'failed-job'; runId: string; name: string; errorText: string; recommendation: string }
+  | {
+      kind: 'failed-job';
+      runId: string;
+      conversationId: string | null;
+      name: string;
+      errorText: string;
+      recommendation: string;
+    }
   | { kind: 'project-switcher' };

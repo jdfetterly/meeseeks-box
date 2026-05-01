@@ -11,6 +11,8 @@ interface BottomSheetProps {
 }
 
 export function BottomSheet({ open, onClose, children, heightPercent = 60 }: BottomSheetProps) {
+  const hiddenProps = open ? {} : { inert: true };
+
   return (
     <>
       <div
@@ -29,6 +31,8 @@ export function BottomSheet({ open, onClose, children, heightPercent = 60 }: Bot
       <div
         role="dialog"
         aria-modal="true"
+        aria-hidden={!open}
+        {...hiddenProps}
         style={{
           position: 'fixed',
           left: 0,
@@ -41,8 +45,10 @@ export function BottomSheet({ open, onClose, children, heightPercent = 60 }: Bot
           borderLeft: `1px solid ${MB.borderStrong}`,
           borderRight: `1px solid ${MB.borderStrong}`,
           borderRadius: '18px 18px 0 0',
+          boxSizing: 'border-box',
           transform: open ? 'translateY(0)' : 'translateY(100%)',
           transition: 'transform 0.25s ease',
+          pointerEvents: open ? 'auto' : 'none',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',

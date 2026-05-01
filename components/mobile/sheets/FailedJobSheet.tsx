@@ -1,7 +1,16 @@
 'use client';
 
+import { useState } from 'react';
 import { BottomSheet } from '../BottomSheet';
 import { MB } from '../tokens';
+
+interface ApiRunSummary {
+  runId?: string;
+  id?: string;
+  scope?: 'ops' | 'personal' | null;
+  agentId?: string | null;
+  conversationId?: string | null;
+}
 
 interface FailedJobSheetProps {
   open: boolean;
@@ -10,11 +19,60 @@ interface FailedJobSheetProps {
   name: string;
   errorText: string;
   recommendation: string;
+  onStatus?: (status: { kind: 'success' | 'error' | 'loading'; message: string }) => void;
 }
 
-export function FailedJobSheet({ open, onClose, name, errorText, recommendation }: FailedJobSheetProps) {
+export function FailedJobSheet({ open, onClose, runId, name, errorText, recommendation, onStatus }: FailedJobSheetProps) {
+  const [isRetrying, setIsRetrying] = useState(false);
+
   async function handleRetry() {
-    onClose();
+    if (isRetrying) {
+      return;
+    }
+
+    setIsRetrying(true);
+    onStatus?.({ kind: 'loading', message: 'Retrying job…' });
+
+    try {
+      const response = await fetch('/api/product-state/runs');
+      const payload = (await response.json()) as { runs?: ApiRunSummary[] };
+      const run = (payload.runs ?? []).find((item) => (item.runId ?? item.id) === runId);
+
+      if (!run?.scope || !run.agentId) {
+        throw new Error(`Missing retry metadata for run ${runId}`);
+      }
+
+      const promptParts = [
+        `Retry the failed job "${name}".`,
+        recommendation ? `Guidance: ${recommendation}.` : null,
+        errorText ? `Previous error: ${errorText}.` : null,
+      ].filter((part): part is string => Boolean(part));
+
+      const launchResponse = await fetch('/api/product-state/launch', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          prompt: promptParts.join(' '),
+          title: `${name} retry`,
+          scope: run.scope,
+          agentId: run.agentId,
+          conversationId: run.conversationId ?? undefined,
+          timing: 'now',
+        }),
+      });
+
+      if (!launchResponse.ok) {
+        throw new Error(`Failed to launch retry for run ${runId}`);
+      }
+
+      onStatus?.({ kind: 'success', message: 'Retry launched.' });
+      onClose();
+    } catch (error) {
+      onStatus?.({ kind: 'error', message: error instanceof Error ? error.message : 'Failed to retry job.' });
+      console.error('Failed to retry failed job with canonical launch', error);
+    } finally {
+      setIsRetrying(false);
+    }
   }
 
   return (
@@ -133,6 +191,7 @@ export function FailedJobSheet({ open, onClose, name, errorText, recommendation 
           <button
             type="button"
             onClick={handleRetry}
+            disabled={isRetrying}
             style={{
               flex: 1,
               height: '40px',
@@ -144,6 +203,7 @@ export function FailedJobSheet({ open, onClose, name, errorText, recommendation 
               fontWeight: 500,
               fontFamily: MB.font,
               cursor: 'pointer',
+              opacity: isRetrying ? 0.7 : 1,
             }}
           >
             ↺ Retry with context
