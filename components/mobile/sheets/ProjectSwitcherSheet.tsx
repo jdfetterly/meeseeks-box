@@ -264,7 +264,7 @@ export function ProjectSwitcherSheet({
                 borderRadius: '999px',
                 background: MB.bg,
                 color: MB.text,
-                fontSize: '12px',
+                fontSize: MB.formControlFontSize,
                 fontFamily: MB.font,
                 outline: 'none',
                 padding: '10px 12px',
