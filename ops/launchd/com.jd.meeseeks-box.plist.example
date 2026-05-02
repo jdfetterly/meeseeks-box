@@ -12,7 +12,7 @@
   <array>
     <string>/bin/bash</string>
     <string>-lc</string>
-    <string>npm run start -- --hostname 127.0.0.1 --port 3001</string>
+    <string>exec npm run start -- --hostname 127.0.0.1 --port 3001</string>
   </array>
 
   <key>EnvironmentVariables</key>
