@@ -173,6 +173,15 @@ Build launch and board behavior around the work item as the primary object. Reso
   - keep `/api/product-state/launch` as the work/run creation contract
   - add an intentional queue worker before treating queued `timing = now` launch records as live execution
   - decide how mobile should expose work/preset launch separately from direct chat
+- `2026-05-02`: follow-up roadmap after mobile reliability cleanup.
+  Completed:
+  - established `/mobile` as the primary active surface for direct OpenClaw chat
+  - archived dated mobile screenshot guidance and moved the retired local split out of the active product path for dependency testing
+  Remaining:
+  - verify no active local, production, or docs workflow depends on the retired split
+  - delete the archived split copy if no breakage appears
+  - choose whether queued launch needs a worker or stays separate from direct chat
+  - keep desktop launch/work flows functional but secondary to mobile reliability
 - `2026-03-21`: `TASK-006` is now partially implemented.
   Completed:
   - added the first create-new conversation-to-work flow from canonical chat threads
@@ -187,6 +196,7 @@ Build launch and board behavior around the work item as the primary object. Reso
 
 - Keep the launch payload contract stable before wiring the UI.
 - Mobile direct chat uses `/api/mobile/chat`; queued launch uses `/api/product-state/launch`. Keep these contracts distinct until queued run execution exists.
+- Desktop is secondary for this phase. Do not let desktop-era route or screenshot assumptions override the current `/mobile` command/jobs/context contract.
 - Work board queries should consume canonical projections instead of recomputing status in the client.
 - Avoid shipping chat escalation until attach-to-existing behavior is supported; duplication risk is too high otherwise.
 - Schedules UI must surface `runtime-native` versus `product-managed` source clearly.

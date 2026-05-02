@@ -5,7 +5,7 @@
 - Initiative ID: `INIT-001`
 - Initiative Name: `Meeseek Box Platform Foundation`
 - Status: `active`
-- Last Updated: `2026-03-19`
+- Last Updated: `2026-05-02`
 - Owner: `JD`
 
 ## Objective
@@ -35,6 +35,8 @@ Establish the first shippable foundation for Meeseek Box as an operator-facing c
 - Testing should be integration-heavy and adapter-aware
 - UI automation should stay focused on golden paths
 - Real-runtime validation should be deliberately small and manual
+- `/mobile` is the primary near-term product surface; desktop is secondary but should remain functional
+- Retired local split artifacts must stay out of the active product tree unless intentionally restored through a new decision
 
 ## Feature Inventory
 
@@ -108,6 +110,14 @@ Manual pre-release validation:
 - MacBook browser smoke
 - Slack fallback validation
 - real or near-real OpenClaw runtime smoke
+
+## Active Follow-Ups
+
+1. Monitor for any breakage after moving the retired standalone `meeseeks-mobile` folder out of the active product tree.
+2. Delete the archived split once local and production checks show no dependency on it.
+3. Continue hardening `/mobile` as the active command/jobs/context loop.
+4. Decide whether queued `timing = now` launch records need an executor, or whether direct `/api/mobile/chat` remains the only live-response path.
+5. Treat desktop as a secondary surface: keep it healthy, but do not let desktop-era responsive-shell docs or screenshots override current mobile decisions.
 
 ## Source Inputs
 

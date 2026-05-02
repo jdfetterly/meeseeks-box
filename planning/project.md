@@ -13,6 +13,12 @@ Meeseek Box is the operator-facing command center for JD's Mac mini OpenClaw run
 
 Current mobile note: the production phone surface is the black/green parent-repo `/mobile` route, backed by `app/mobile/page.tsx` and `components/mobile/*`. The retired standalone `meeseeks-mobile` split is historical and should not guide current mobile implementation.
 
+Current product priority:
+
+1. `/mobile` is the primary active surface for the solo operator loop.
+2. Desktop remains a secondary surface and should stay usable, but it should not drive near-term product decisions unless a desktop-specific workflow proves stronger.
+3. The retired standalone `meeseeks-mobile` split should remain outside the active product tree while we verify nothing depends on it. If no breakage appears, delete the archived copy later.
+
 ## Scope Summary
 
 - In scope:
@@ -67,6 +73,7 @@ Current mobile note: the production phone surface is the black/green parent-repo
 - The adapter boundary is the least stable interface and must be treated as a primary testing target
 - Mobile UI coverage must stay right-sized and focus on golden-path flows
 - Mobile QA must distinguish the current `/mobile` command shell from older responsive-shell or split-app screenshots
+- Desktop work is secondary: keep the parent desktop routes functional, but prioritize mobile reliability and direct OpenClaw usefulness first
 - Real OpenClaw and Claw-Tower discovery must happen before implementation decisions harden around events, approvals, schedules, and workspace paths
 
 ## Key Links
@@ -87,3 +94,11 @@ Current mobile note: the production phone surface is the black/green parent-repo
 - Which parts of one-shot scheduling map directly to native OpenClaw scheduling versus product-managed delayed execution?
 - How much of approval blocking/resume can be supported natively by OpenClaw versus a wrapper layer?
 - What is the actual runtime workspace file layout for writable memory paths?
+
+## Near-Term Roadmap
+
+1. Confirm no active workflow depends on the retired local split after moving it out of `/Users/jdfetterly/Products/meeseeks-box/`.
+2. Delete the archived split copy if no breakage appears.
+3. Keep improving `/mobile` as the primary phone-first command, jobs, and context surface.
+4. Decide whether queued launch records need a real queue worker, or whether launch should remain a tracked-work creation contract separate from direct chat.
+5. Preserve desktop as a secondary route family and revisit it only when a desktop workflow has clear pull.

@@ -54,6 +54,7 @@ Build the redesign from the inside out. First land the active-work model and unf
 - The active Assistant session may need a dedicated server-backed model rather than piggybacking entirely on existing chat-thread state if current client assumptions are too thread-centric.
 - Existing Home and Chat route naming may create temporary confusion during rollout; shell copy cutover should be treated as part of the product contract, not post-hoc cleanup.
 - The current production phone surface is the dedicated black/green `/mobile` command shell, not the older responsive-shell mobile UI or retired standalone `meeseeks-mobile` split. Future mobile Assistant work should either build on that shell or explicitly replace it through a new approved design decision.
+- Desktop is secondary for the current solo-operator build. Preserve it, but do not optimize the product roadmap around desktop unless a specific desktop workflow earns it.
 
 ## 7. Current Execution Notes
 
@@ -87,3 +88,4 @@ Build the redesign from the inside out. First land the active-work model and unf
 - Keep Assistant proposal confirmation as the mutation boundary even when manual fallback exists.
 - Preserve canonical queue ownership; Briefing must not quietly absorb Inbox or Review Queue over time.
 - Treat the naming cutover as product behavior, not documentation cleanup.
+- When mobile and desktop planning conflict, prefer the current `/mobile` operator loop unless the user explicitly chooses a desktop-first path.
