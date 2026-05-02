@@ -96,18 +96,20 @@ export function ChatSheet({ open, onClose, conversationId, title }: ChatSheetPro
     setMessages((prev) => [...prev, optimistic]);
 
     try {
-      const response = await fetch(`/api/product-state/conversations/${conversationId}/messages`, {
+      const response = await fetch('/api/mobile/chat', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ role: 'user', contentText: trimmed }),
+        body: JSON.stringify({
+          conversationId,
+          agentContext: 'mini-ops',
+          message: trimmed,
+        }),
       });
       if (!response.ok) {
         throw new Error('Message send failed');
       }
 
-      const refreshed = await fetch(`/api/product-state/conversations/${conversationId}/messages`)
-        .then((r) => (r.ok ? r.json() : { messages: [] }))
-        .catch(() => ({ messages: [] }));
+      const refreshed = await response.json().catch(() => ({ messages: [] }));
       setMessages(
         (refreshed as { messages?: ApiMessage[] }).messages?.map(mapApiMessage) ?? [optimistic],
       );

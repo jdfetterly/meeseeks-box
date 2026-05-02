@@ -846,38 +846,23 @@ export function MobileApp() {
         conversationId = createPayload.conversation.id;
       }
 
-      const messageResponse = await fetch(`/api/product-state/conversations/${conversationId}/messages`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ role: 'user', contentText: prompt }),
-      });
-
-      if (!messageResponse.ok) {
-        throw new Error('Failed to save the command message');
-      }
-
-      const launchResponse = await fetch('/api/product-state/launch', {
+      const chatResponse = await fetch('/api/mobile/chat', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          prompt,
-          title: prompt.slice(0, 72),
           agentContext: MINI_OPS_CONTEXT,
-          agentId: MINI_OPS_CONTEXT,
-          scope: MINI_OPS_CONTEXT,
           conversationId,
-          timing: 'now',
+          message: prompt,
         }),
       });
 
-      const launchPayload = (await launchResponse.json()) as {
-        launch?: { workItemId?: string | null };
+      const chatPayload = (await chatResponse.json()) as {
         error?: string;
         message?: string;
       };
 
-      if (!launchResponse.ok) {
-        throw new Error(launchPayload.error ?? launchPayload.message ?? 'Failed to launch work');
+      if (!chatResponse.ok) {
+        throw new Error(chatPayload.error ?? chatPayload.message ?? 'Failed to chat with OpenClaw');
       }
 
       await refreshActiveProjectScope();
@@ -888,11 +873,7 @@ export function MobileApp() {
         title: prompt.slice(0, 72),
       });
 
-      showActionStatus({ kind: 'success', message: 'Command sent.' });
-
-      if (launchPayload.launch?.workItemId) {
-        setTab('jobs');
-      }
+      showActionStatus({ kind: 'success', message: 'OpenClaw replied.' });
     } catch (error) {
       showActionStatus({ kind: 'error', message: error instanceof Error ? error.message : 'Failed to send command.' });
       throw error;
