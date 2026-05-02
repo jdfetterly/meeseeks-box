@@ -40,7 +40,7 @@ Rev A fixes those structural issues by clarifying surface ownership and giving t
 | `REQ-002` | Briefing previews ranked work without replacing Inbox or Review Queue. | High | Fixes queue and notification ownership |
 | `REQ-003` | The system tracks unfinished work through candidate unresolved state and durable open loops. | High | Core AI-forward capability |
 | `REQ-004` | Conversations support project grouping, actionable status, and minimal branch lineage in v1. | High | Prevents context fragmentation |
-| `REQ-005` | Mobile uses full-screen Assistant takeover without thread-first drift. | High | Maintains one model across devices |
+| `REQ-005` | Mobile uses the `/mobile` command shell without thread-first drift. | High | Maintains one model across devices |
 | `REQ-006` | Project and Board default to plan-first execution instead of manual setup. | High | Aligns execution with planning artifact |
 | `REQ-007` | Review Queue remains the canonical completion surface with fast follow-up generation. | High | Preserves review-centered completion |
 | `REQ-008` | Schedules behave as standing delegated work centered on purpose, output, and usefulness. | High | Keeps recurring work AI-first |

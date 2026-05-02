@@ -146,18 +146,18 @@
   - Automated helper coverage added in `lib/schedules/presentation.test.ts`
   - Browser validation of list/detail ordering and Inbox escalation still pending
 
-- [ ] `TC-009` Mobile full-screen Assistant takeover preserves origin continuity
+- [ ] `TC-009` Mobile `/mobile` command shell preserves origin continuity
   Requirement refs: `REQ-001`, `REQ-005`
   Task refs: `TASK-006`
   Test level: Playwright narrow viewport + manual
   Preconditions:
   - Narrow viewport or real device available
   Steps:
-  1. Open Assistant from Briefing, Project, and Board on mobile width
-  2. Continue or complete work in the takeover
-  3. Close Assistant or confirm proposal
+  1. Open `/mobile`, switch between command/jobs/context, and start contextual work on mobile width
+  2. Continue or complete work in the mobile command flow
+  3. Close any opened sheet or confirm the proposed action
   Expected result:
-  - Assistant is full-screen, carries context, and returns the user to the originating surface with state preserved
+  - The `/mobile` shell carries project context, keeps tab/sheet navigation stable, and preserves continuation state
   Execution status: not-run
   Notes:
   - Manual real-device pass remains required

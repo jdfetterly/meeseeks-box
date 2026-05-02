@@ -22,7 +22,7 @@
   - canonical conversation metadata, grouping, and branching APIs
   - open-loop persistence and Briefing ranking
   - navigation naming cutover to `Briefing`, `Review Queue`, and `Conversations`
-  - mobile full-screen Assistant takeover with persistent `Ask / Delegate`
+  - mobile `/mobile` command shell through the current command/jobs/context shell
 - `2026-03-26`: Upgraded Review Queue and schedule surfaces:
   - Review Queue now supports decision actions that either accept output or create follow-up work with lineage
   - schedule list/detail surfaces now foreground purpose, output usefulness, and next delivery ahead of runtime diagnostics

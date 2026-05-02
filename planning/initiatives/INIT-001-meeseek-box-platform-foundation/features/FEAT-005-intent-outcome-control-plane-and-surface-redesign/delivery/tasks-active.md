@@ -33,7 +33,7 @@ Build the redesign from the inside out. First land the active-work model and unf
 | `TASK-003` | Project and Board plan-first read-model rewrite | Reframe Project Detail and Board around current plan, recommended next move, derived execution, and demoted manual launch/setup affordances. | `TASK-001`, `TASK-002`, `FEAT-002/TASK-005` | sections 3, 11, 12, 15; `REQ-006` | project query service, work board query service, project page, work page, plan drift handling | Project shows plan and next move before advanced forms, Board defaults to plan view, and plan/card drift creates visible unresolved state instead of silent divergence. | integration tests, Playwright project/board journeys | `PR-003 Project + Board redesign` |
 | `TASK-004` | Review Queue primary surface and follow-up pipeline | Restore Review Queue as the canonical completion surface and tighten rejection/request-changes follow-up lineage. | `TASK-002`, `FEAT-002/TASK-006` | sections 6, 10, 14; `REQ-007` | review queue service, review page, card/review linkage, follow-up proposal pipeline | Completed work lands in Review Queue, previews remain previews, and follow-up generation preserves lineage without requiring context restatement. | integration tests, Playwright review queue path | `PR-004 Review Queue + follow-up` |
 | `TASK-005` | Standing delegated schedules reframe | Update schedule list/detail/read models to lead with purpose, output, usefulness, and canonical escalation into Inbox when operational intervention is required. | `TASK-002`, `TASK-004`, `FEAT-002/TASK-004` | sections 13, 14; `REQ-008` | schedule queries, schedules page/detail, usefulness signal, Inbox linkage | Schedules read as recurring delegated outcomes, minimum usefulness exists in v1, and failures/missed runs escalate into Inbox without turning schedules into an admin-first surface. | integration tests, Playwright schedule flows | `PR-005 Schedules reframe` |
-| `TASK-006` | Mobile Assistant takeover and recovery model | Implement the full-screen mobile Assistant, preserve origin return behavior, and keep Conversations as recovery/search only on mobile. | `TASK-001`, `TASK-002`, `TASK-003`, `TASK-004`, `TASK-005`, `FEAT-000/TASK-002` | sections 2, 8, 16, 17; `REQ-001`, `REQ-002`, `REQ-005` | mobile shell, Assistant launcher, modal/takeover state, conversations page, narrow-viewport behavior | Mobile uses one active-work model, no split panel, no forced thread-first start path, and origin context is preserved after close or confirm. | Playwright narrow-viewport flows, manual phone validation | `PR-006 Mobile Assistant model` |
+| `TASK-006` | Mobile command shell and recovery model | Build on the current black/green `/mobile` command, jobs, and context loop; preserve recovery/search via Conversations only where it supports that loop. | `TASK-001`, `TASK-002`, `TASK-003`, `TASK-004`, `TASK-005`, `FEAT-000/TASK-002` | sections 2, 8, 16, 17; `REQ-001`, `REQ-002`, `REQ-005` | `app/mobile/page.tsx`, `components/mobile/*`, direct chat, jobs, context bundles, project switcher, conversation recovery links | Mobile uses one active-work model, no split panel, no forced thread-first start path, and any future replacement concept is explicitly superseded unless a new approved design replaces `/mobile`. | Playwright narrow-viewport flows, manual phone validation | `PR-006 Mobile command model` |
 | `TASK-007` | Cross-surface polish, copy cutover, and verification closure | Finish naming cutover to Briefing, tighten handoff affordances, update docs/tests, and close traceability gaps across surfaces. | `TASK-003`, `TASK-004`, `TASK-005`, `TASK-006` | all sections; all requirements | shell navigation copy, handoff links, delivery docs, test execution evidence | Product language is consistent, traceability is complete, and all linked automated/manual validations are recorded before the feature is marked complete. | regression pass, delivery review, manual/browser verification | `PR-007 Cross-surface closure` |
 
 ## 5. Verification Matrix
@@ -44,7 +44,7 @@ Build the redesign from the inside out. First land the active-work model and unf
 | Briefing + canonical queues (`REQ-002`) | `TASK-002`, `TASK-007` | unit ranking tests, integration tests, Playwright briefing drilldowns |
 | Open-loop lifecycle (`REQ-003`) | `TASK-001`, `TASK-002` | unit promotion/resolution tests, integration lifecycle tests |
 | Conversation grouping + branching (`REQ-004`) | `TASK-001` | integration tests, Playwright branch/reopen recovery |
-| Mobile takeover (`REQ-005`) | `TASK-006`, `TASK-007` | Playwright narrow viewport, manual real-device smoke |
+| Mobile command loop (`REQ-005`) | `TASK-006`, `TASK-007` | Playwright narrow viewport, manual real-device smoke |
 | Plan-first Project + Board (`REQ-006`) | `TASK-003`, `TASK-007` | integration tests, Playwright project/board path |
 | Review Queue + follow-up (`REQ-007`) | `TASK-002`, `TASK-004` | integration tests, Playwright review path |
 | Standing delegated schedules (`REQ-008`) | `TASK-005`, `TASK-007` | integration tests, Playwright schedules path |
@@ -54,6 +54,8 @@ Build the redesign from the inside out. First land the active-work model and unf
 - The active Assistant session may need a dedicated server-backed model rather than piggybacking entirely on existing chat-thread state if current client assumptions are too thread-centric.
 - Existing Home and Chat route naming may create temporary confusion during rollout; shell copy cutover should be treated as part of the product contract, not post-hoc cleanup.
 - The current production phone surface is the dedicated black/green `/mobile` command shell, not the older responsive-shell mobile UI or retired standalone `meeseeks-mobile` split. Future mobile Assistant work should either build on that shell or explicitly replace it through a new approved design decision.
+- Desktop is secondary for the current solo-operator build. Preserve it, but do not optimize the product roadmap around desktop unless a specific desktop workflow earns it.
+- The older mobile-takeover framing is superseded for this phase. Use "mobile command shell" language unless a later approved design intentionally replaces the current command/jobs/context loop.
 
 ## 7. Current Execution Notes
 
@@ -72,7 +74,7 @@ Build the redesign from the inside out. First land the active-work model and unf
   - Briefing page and navigation naming cutover
   - project-linked open-loop storage and API routes
   - Conversations list/detail recovery surfaces
-  - mobile full-screen Assistant takeover plus floating `Ask / Delegate`
+  - an older mobile command shell concept, now superseded by the current `/mobile` command/jobs/context shell
 - `2026-03-26`: Extended the implementation into surface behavior:
   - Review Queue now supports `Accept` and `Request changes` decisions
   - request-changes creates follow-up work with preserved plan lineage
@@ -87,3 +89,4 @@ Build the redesign from the inside out. First land the active-work model and unf
 - Keep Assistant proposal confirmation as the mutation boundary even when manual fallback exists.
 - Preserve canonical queue ownership; Briefing must not quietly absorb Inbox or Review Queue over time.
 - Treat the naming cutover as product behavior, not documentation cleanup.
+- When mobile and desktop planning conflict, prefer the current `/mobile` operator loop unless the user explicitly chooses a desktop-first path.

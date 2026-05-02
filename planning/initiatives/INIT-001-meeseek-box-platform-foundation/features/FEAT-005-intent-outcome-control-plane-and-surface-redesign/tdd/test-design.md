@@ -8,7 +8,7 @@
 
 ## Strategy
 
-Use service integration as the primary confidence layer for Assistant sessions, queue ownership, conversation lineage, and open-loop lifecycle. Add a small browser suite for the highest-risk interaction-model paths, then reserve real narrow-device validation for the mobile takeover and continuation flows.
+Use service integration as the primary confidence layer for Assistant sessions, queue ownership, conversation lineage, and open-loop lifecycle. Add a small browser suite for the highest-risk interaction-model paths, then reserve real narrow-device validation for the mobile command shell and continuation flows.
 
 ## Planned Coverage
 
@@ -18,7 +18,7 @@ Use service integration as the primary confidence layer for Assistant sessions, 
 | `REQ-002` | Integration + E2E | Briefing hero waterfall, preview-only ownership, and canonical Inbox / Review Queue drilldowns |
 | `REQ-003` | Unit + Integration | candidate unresolved state creation, durable promotion, auto-resolution, and escalation rules |
 | `REQ-004` | Integration + E2E | Conversation grouping, status lifecycle, summary refresh, and child-branch lineage |
-| `REQ-005` | E2E + Manual | Mobile full-screen Assistant takeover, Conversations recovery role, and return-to-origin continuity |
+| `REQ-005` | E2E + Manual | Mobile `/mobile` command shell, Conversations recovery role, and return-to-origin continuity |
 | `REQ-006` | Integration + E2E | Project current-plan prominence, Board default plan view, and plan-to-card drift handling |
 | `REQ-007` | Integration + E2E | Review Queue ownership, follow-up card generation, and lineage preservation after review actions |
 | `REQ-008` | Integration + E2E | Schedule purpose/output/usefulness-first read model and Inbox escalation for operational failures |

@@ -122,7 +122,7 @@
   - start new work from Assistant with no existing context and attach it to a project without navigating to `Conversations`
   - continue saved project work from the originating project surface without being forced through `Conversations`
   - create a child conversation from a specific planning turn and verify parent-child lineage appears in `Conversations`
-  - open mobile-width Assistant from `Briefing`, `Project`, and `Board` and verify it behaves as a full-screen takeover instead of a split panel
+  - open the mobile-width `/mobile` shell and verify command, jobs, and context preserve project context without falling back to a split panel
   - verify mobile `Conversations` behaves as recovery/history and does not require a thread-first `New conversation` path for starting work
   - verify Project Detail remains plan-first and Board remains plan-derived after the read-model cutover
   - verify schedule list/detail lead with purpose, output, and usefulness while operational failures route into `Inbox`

@@ -21,7 +21,7 @@ Turn Meeseek Box into a clearer intent-to-outcome product by making Assistant th
   - Briefing surfacing rules and canonical queue separation
   - candidate unresolved state and durable open loop lifecycle
   - minimal conversation branching and lineage
-  - mobile full-screen Assistant takeover
+  - mobile `/mobile` command shell
   - plan-derived execution framing for Board
   - review-queue-first completion model
   - output-first standing delegated schedules
@@ -39,7 +39,7 @@ Turn Meeseek Box into a clearer intent-to-outcome product by making Assistant th
 | `REQ-002` | Briefing previews ranked work without replacing Inbox or Review Queue | draft | High |
 | `REQ-003` | The system tracks unfinished work through candidate unresolved state and durable open loops | draft | High |
 | `REQ-004` | Conversations support project grouping, actionable status, and minimal branch lineage in v1 | draft | High |
-| `REQ-005` | Mobile uses full-screen Assistant takeover without thread-first drift | draft | High |
+| `REQ-005` | Mobile uses the `/mobile` command shell without thread-first drift | draft | High |
 | `REQ-006` | Project and Board default to plan-first execution instead of manual setup | draft | High |
 | `REQ-007` | Review Queue remains the canonical completion surface with fast follow-up generation | draft | High |
 | `REQ-008` | Schedules behave as standing delegated work centered on purpose, output, and usefulness | draft | High |
