@@ -84,7 +84,8 @@ npm run build
 
 PLIST_SOURCE="$REPO_PATH/ops/launchd/${SERVICE_LABEL}.plist.example"
 PLIST_DEST="$HOME/Library/LaunchAgents/${SERVICE_LABEL}.plist"
-LAUNCHCTL_TARGET="gui/$(id -u)/$SERVICE_LABEL"
+LAUNCHCTL_DOMAIN="gui/$(id -u)"
+LAUNCHCTL_TARGET="$LAUNCHCTL_DOMAIN/$SERVICE_LABEL"
 HEALTHCHECK_HOSTPORT="${HEALTHCHECK_URL#*://}"
 HEALTHCHECK_HOSTPORT="${HEALTHCHECK_HOSTPORT%%/*}"
 HEALTHCHECK_PORT="${HEALTHCHECK_HOSTPORT##*:}"
@@ -112,6 +113,11 @@ stop_port_listeners() {
   fi
 }
 
+if launchctl print "$LAUNCHCTL_TARGET" >/dev/null 2>&1; then
+  echo "==> Unloading launchd service"
+  launchctl bootout "$LAUNCHCTL_TARGET"
+fi
+
 if [[ -f "$PLIST_SOURCE" ]]; then
   echo "==> Refreshing launchd plist"
   mkdir -p "$HOME/Library/LaunchAgents"
@@ -120,18 +126,13 @@ fi
 
 stop_port_listeners
 
-if launchctl print "$LAUNCHCTL_TARGET" >/dev/null 2>&1; then
-  echo "==> Restarting launchd service"
-  launchctl kickstart -k "$LAUNCHCTL_TARGET"
-else
-  if [[ ! -f "$PLIST_DEST" ]]; then
-    echo "Launchd plist missing: $PLIST_DEST" >&2
-    exit 1
-  fi
-  echo "==> Bootstrapping launchd service"
-  launchctl bootstrap "gui/$(id -u)" "$PLIST_DEST"
-  launchctl kickstart -k "$LAUNCHCTL_TARGET"
+if [[ ! -f "$PLIST_DEST" ]]; then
+  echo "Launchd plist missing: $PLIST_DEST" >&2
+  exit 1
 fi
+
+echo "==> Bootstrapping launchd service"
+launchctl bootstrap "$LAUNCHCTL_DOMAIN" "$PLIST_DEST"
 
 echo "==> Waiting for healthcheck: $HEALTHCHECK_URL"
 attempt=1
