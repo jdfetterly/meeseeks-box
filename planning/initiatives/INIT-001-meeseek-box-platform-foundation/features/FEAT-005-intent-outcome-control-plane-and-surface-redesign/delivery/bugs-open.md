@@ -17,4 +17,4 @@
   - Briefing absorbing canonical Inbox or Review Queue behavior
   - noisy open-loop promotion
   - branch lineage loss
-  - mobile takeover context loss
+  - mobile command-shell context loss

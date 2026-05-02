@@ -114,10 +114,11 @@ Manual pre-release validation:
 ## Active Follow-Ups
 
 1. Monitor for any breakage after moving the retired standalone `meeseeks-mobile` folder out of the active product tree.
-2. Delete the archived split once local and production checks show no dependency on it.
-3. Continue hardening `/mobile` as the active command/jobs/context loop.
-4. Decide whether queued `timing = now` launch records need an executor, or whether direct `/api/mobile/chat` remains the only live-response path.
-5. Treat desktop as a secondary surface: keep it healthy, but do not let desktop-era responsive-shell docs or screenshots override current mobile decisions.
+2. Before deleting the archived split, verify local build, focused mobile tests, production `/mobile` smoke, docs search, and one real iPhone Chrome pass still use the parent-repo `/mobile` path.
+3. Delete the archived split once local and production checks show no dependency on it.
+4. Continue hardening `/mobile` as the active command/jobs/context loop.
+5. Decide whether queued `timing = now` launch records need an executor, or whether direct `/api/mobile/chat` remains the only live-response path.
+6. Treat desktop as a secondary surface: keep it healthy, but do not let desktop-era responsive-shell docs or screenshots override current mobile decisions.
 
 ## Source Inputs
 

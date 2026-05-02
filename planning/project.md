@@ -98,7 +98,8 @@ Current product priority:
 ## Near-Term Roadmap
 
 1. Confirm no active workflow depends on the retired local split after moving it out of `/Users/jdfetterly/Products/meeseeks-box/`.
-2. Delete the archived split copy if no breakage appears.
-3. Keep improving `/mobile` as the primary phone-first command, jobs, and context surface.
-4. Decide whether queued launch records need a real queue worker, or whether launch should remain a tracked-work creation contract separate from direct chat.
-5. Preserve desktop as a secondary route family and revisit it only when a desktop workflow has clear pull.
+2. Before deleting the archived split, run the dependency checklist: local build, focused mobile tests, production `/mobile` smoke, docs search for retired UI references, and one real iPhone Chrome chat/context pass.
+3. Delete the archived split copy if no breakage appears.
+4. Keep improving `/mobile` as the primary phone-first command, jobs, and context surface.
+5. Decide whether queued launch records need a real queue worker, or whether launch should remain a tracked-work creation contract separate from direct chat.
+6. Preserve desktop as a secondary route family and revisit it only when a desktop workflow has clear pull.

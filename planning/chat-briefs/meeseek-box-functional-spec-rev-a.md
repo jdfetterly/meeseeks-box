@@ -990,7 +990,7 @@ They differ only in presentation.
 
 ### 16.2 Mobile Model
 
-- Assistant is a full-screen takeover launched from a persistent `Ask / Delegate` action.
+- Assistant behavior is accessed through the current `/mobile` command shell: command input, jobs, context, and recovery paths.
 - Conversations remains a history/recovery/search surface.
 - Mobile MUST NOT require `/chat` or Conversations as the primary way to start new work.
 
@@ -1043,7 +1043,7 @@ Suggested starters:
 - no forced Assistant -> Conversations handoff
 - candidate unresolved state vs durable open loop
 - minimal v1 conversation branching
-- mobile full-screen Assistant takeover
+- mobile `/mobile` command shell
 - plan-first Project and Board framing
 - schedule purpose/output framing with minimum usefulness signal
 

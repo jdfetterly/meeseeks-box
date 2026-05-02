@@ -17,7 +17,7 @@ The driving requirements are:
 - `REQ-002` Briefing previews ranked work without replacing Inbox or Review Queue
 - `REQ-003` The system tracks unfinished work through candidate unresolved state and durable open loops
 - `REQ-004` Conversations support project grouping, actionable status, and minimal branch lineage in v1
-- `REQ-005` Mobile uses full-screen Assistant takeover without thread-first drift
+- `REQ-005` Mobile uses the `/mobile` command shell without thread-first drift
 - `REQ-006` Project and Board default to plan-first execution instead of manual setup
 - `REQ-007` Review Queue remains the canonical completion surface with fast follow-up generation
 - `REQ-008` Schedules behave as standing delegated work centered on purpose, output, and usefulness
@@ -173,7 +173,7 @@ Recommended additions:
   2. queue ownership and Briefing read model
   3. Project and Board read models
   4. Review Queue and schedule framing
-  5. mobile Assistant takeover
+  5. mobile command shell
 
 ## 14. Test Strategy
 
@@ -182,7 +182,7 @@ Recommended additions:
 | Unit | ranking helpers, promotion rules, status transitions, branch metadata | pure logic first |
 | Integration | Assistant session + conversation linkage, queue ownership, open-loop promotion/resolution | main correctness layer |
 | Contract | Assistant start/confirm, briefing query, branch API | request/response stability |
-| Playwright | Assistant start + continuation, Briefing previews, Review Queue, mobile takeover | small critical-path suite |
+| Playwright | Assistant start + continuation, Briefing previews, Review Queue, mobile command shell | small critical-path suite |
 | Manual | real narrow-viewport behavior and project-context continuation | validates actual UX coherence |
 
 ## 15. Risks and Tradeoffs
@@ -203,7 +203,7 @@ Recommended additions:
 | `REQ-002` | Briefing query, Inbox and Review Queue ownership | integration: ranking + preview ownership; Playwright: briefing hero + drilldown |
 | `REQ-003` | candidate unresolved state, durable loops, escalation and resolution services | unit: promotion rules; integration: lifecycle |
 | `REQ-004` | conversation summaries, statuses, links, branch API | integration: branch + reopen; Playwright: recover branch |
-| `REQ-005` | mobile Assistant takeover and Conversations recovery | Playwright narrow viewport + manual narrow-device validation |
+| `REQ-005` | mobile command shell and Conversations recovery | Playwright narrow viewport + manual narrow-device validation |
 | `REQ-006` | project-context query, board plan view default, plan drift handling | integration + Playwright |
 | `REQ-007` | review queue query and review follow-up pipeline | integration + Playwright |
 | `REQ-008` | schedules query/usefulness and Inbox linkage for operational failures | integration + Playwright |
