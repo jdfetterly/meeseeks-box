@@ -230,6 +230,27 @@ function buildFetchMock() {
       return mockJsonResponse({ runSummaries: [] });
     }
 
+    if (url.endsWith('/api/product-state/conversations') && init?.method === 'POST') {
+      return mockJsonResponse({
+        conversation: {
+          id: 'conv-created',
+          title: JSON.parse(String(init.body ?? '{}')).title,
+          summary: JSON.parse(String(init.body ?? '{}')).summary,
+          projectId: JSON.parse(String(init.body ?? '{}')).projectId,
+          status: 'active',
+          updatedAt: now,
+        },
+      });
+    }
+
+    if (url.endsWith('/api/product-state/conversations/conv-2/messages') && init?.method === 'POST') {
+      return mockJsonResponse({ message: { id: 'msg-created' } });
+    }
+
+    if (url.endsWith('/api/product-state/launch') && init?.method === 'POST') {
+      return mockJsonResponse({ launch: { workItemId: 'work-created', runId: 'run-created' } });
+    }
+
     if (url.endsWith('/api/product-state/conversations')) {
       return mockJsonResponse({ conversations });
     }
@@ -356,6 +377,40 @@ describe('mobile click contract', () => {
     });
     expect(String(body.relativePath)).toMatch(/^mobile-bundles\/release-checklist-/);
     expect(await screen.findByText('Added Release checklist.')).toBeTruthy();
+  });
+
+  it('launches mobile commands with the required mini-ops agent id', async () => {
+    const localStorageMock = installLocalStorageMock();
+    localStorageMock.setItem('meeseeks-mobile.project-selection', JSON.stringify({ id: 'proj-2', title: 'Project Two' }));
+    const fetchMock = buildFetchMock();
+    vi.stubGlobal('fetch', fetchMock as unknown as typeof fetch);
+
+    render(<MobileApp />);
+
+    const input = await screen.findByPlaceholderText(/ask about project two/i);
+    fireEvent.change(input, { target: { value: 'Hey there, how you doing' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/product-state/launch',
+        expect.objectContaining({ method: 'POST' }),
+      ),
+    );
+
+    const launchCall = fetchMock.mock.calls.find(
+      ([url, init]) => String(url) === '/api/product-state/launch' && init?.method === 'POST',
+    );
+    const body = JSON.parse(String(launchCall?.[1]?.body ?? '{}')) as Record<string, unknown>;
+
+    expect(body).toMatchObject({
+      prompt: 'Hey there, how you doing',
+      agentContext: 'mini-ops',
+      agentId: 'mini-ops',
+      scope: 'mini-ops',
+      conversationId: 'conv-2',
+      timing: 'now',
+    });
   });
 
   it('keeps context bundles distinct from work, review, and workspace screens', async () => {

@@ -863,6 +863,7 @@ export function MobileApp() {
           prompt,
           title: prompt.slice(0, 72),
           agentContext: MINI_OPS_CONTEXT,
+          agentId: MINI_OPS_CONTEXT,
           scope: MINI_OPS_CONTEXT,
           conversationId,
           timing: 'now',
