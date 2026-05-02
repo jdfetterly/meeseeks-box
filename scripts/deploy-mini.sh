@@ -76,6 +76,9 @@ git pull --ff-only origin main
 echo "==> Installing dependencies"
 npm ci
 
+echo "==> Clearing previous production build output"
+rm -rf .next
+
 echo "==> Building production bundle"
 npm run build
 
