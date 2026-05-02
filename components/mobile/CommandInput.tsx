@@ -90,7 +90,7 @@ export function CommandInput({ onSend, placeholder = 'Send a command…', disabl
             border: 'none',
             outline: 'none',
             color: MB.text,
-            fontSize: '15px',
+            fontSize: MB.formControlFontSize,
             fontFamily: MB.font,
           }}
         />

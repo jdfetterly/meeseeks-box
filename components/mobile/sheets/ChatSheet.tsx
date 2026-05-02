@@ -308,7 +308,7 @@ export function ChatSheet({ open, onClose, conversationId, title }: ChatSheetPro
               border: 'none',
               outline: 'none',
               color: MB.text,
-              fontSize: '11px',
+              fontSize: MB.formControlFontSize,
               fontFamily: MB.font,
             }}
           />
