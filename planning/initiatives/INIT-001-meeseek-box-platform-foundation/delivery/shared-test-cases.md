@@ -4,7 +4,7 @@
 - Project: `PROJ-001 Meeseek Box`
 - Initiative ID: `INIT-001`
 - Status: `draft`
-- Last Updated: `2026-03-26`
+- Last Updated: `2026-05-02`
 
 ## Cross-Feature Service Integration
 
@@ -40,7 +40,13 @@
 
 - Use shared `ViewportProfile` definitions from `../shared-contracts.md`
 - Narrow Playwright viewport is required
-- Real iPhone Safari validation remains mandatory and is not replaced by emulation
+- Real iPhone browser validation, Chrome or Safari, remains mandatory and is not replaced by emulation
+- `2026-05-02` production mobile chat validation completed:
+  - open `/mobile` over the Tailnet production URL from a real iPhone browser
+  - send a short command to the active project or General Chat
+  - verify `/api/mobile/chat` returns a direct OpenClaw response
+  - verify the assistant message persists after refresh
+  - verify the command bar does not fall back to queued-only `/api/product-state/launch` behavior for direct chat
 - `2026-03-21` browser pass completed:
   - save draft from Work
   - promote draft into real queued work

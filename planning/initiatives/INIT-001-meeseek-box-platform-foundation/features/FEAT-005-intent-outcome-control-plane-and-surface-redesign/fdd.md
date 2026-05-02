@@ -8,7 +8,7 @@
 - Approval Status: draft
 - Last Updated: `2026-03-26`
 - Source Inputs:
-  - `/Users/jdfetterly/Documents/projects-folder/meeseeks-box/planning/chat-briefs/meeseek-box-functional-spec-rev-a.md`
+  - `../../../../chat-briefs/meeseek-box-functional-spec-rev-a.md`
   - `requirements/index.md`
 
 ## Problem Statement and Context

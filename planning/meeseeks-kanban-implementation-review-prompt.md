@@ -15,7 +15,7 @@ Read these files first:
 
 - /Users/jdfetterly/Documents/projects-folder/meeseeks-box/docs/ui-screen-audit/main-screens.md
 - /Users/jdfetterly/Documents/projects-folder/meeseeks-box/planning/ai-first-north-star.md
-- /Users/jdfetterly/Documents/projects-folder/meeseeks-box/planning/chat-briefs/06-board-page.md
+- planning/chat-briefs/06-board-page.md
 - /Users/jdfetterly/Documents/projects-folder/meeseeks-box/planning/cline-kanban-findings.md
 
 Important context:

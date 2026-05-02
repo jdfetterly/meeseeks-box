@@ -161,8 +161,18 @@ Build launch and board behavior around the work item as the primary object. Reso
     - inspecting the linked recurring schedule summary from work detail
     - confirming recurring controls render correctly from the work-owned surface on narrow viewport
   Remaining:
-  - wire launch/preset flows into the intended mobile-first final UI
+  - wire launch/preset work creation flows into the intended mobile-first final UI without replacing the direct chat path
   - add browser automation for launch and board validation once the surface stabilizes
+- `2026-05-02`: `TASK-007` added a production-validated direct mobile chat path.
+  Completed:
+  - added `POST /api/mobile/chat` for direct mobile responses through OpenClaw
+  - updated the mobile command bar and chat sheet so ordinary chat no longer depends on queued `/api/product-state/launch` behavior
+  - persisted both user and assistant messages in canonical conversations
+  - production smoke passed over the Mac mini Tailnet URL with a real assistant response and persisted history
+  Remaining:
+  - keep `/api/product-state/launch` as the work/run creation contract
+  - add an intentional queue worker before treating queued `timing = now` launch records as live execution
+  - decide how mobile should expose work/preset launch separately from direct chat
 - `2026-03-21`: `TASK-006` is now partially implemented.
   Completed:
   - added the first create-new conversation-to-work flow from canonical chat threads
@@ -176,6 +186,7 @@ Build launch and board behavior around the work item as the primary object. Reso
 ## 8. Notes for Execution
 
 - Keep the launch payload contract stable before wiring the UI.
+- Mobile direct chat uses `/api/mobile/chat`; queued launch uses `/api/product-state/launch`. Keep these contracts distinct until queued run execution exists.
 - Work board queries should consume canonical projections instead of recomputing status in the client.
 - Avoid shipping chat escalation until attach-to-existing behavior is supported; duplication risk is too high otherwise.
 - Schedules UI must surface `runtime-native` versus `product-managed` source clearly.

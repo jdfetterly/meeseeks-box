@@ -5,7 +5,7 @@
 - Initiative ID: `INIT-001`
 - Feature ID: `FEAT-002`
 - Status: `draft`
-- Last Updated: `2026-03-18`
+- Last Updated: `2026-05-02`
 - Source TDD Test Design: `../tdd/test-design.md`
 
 ## Test Cases
@@ -75,3 +75,21 @@
   Execution status: not-run
   Notes:
   - Manual smoke, not part of PR gate
+
+- [ ] `TC-005` Mobile command bar returns a direct OpenClaw response
+  Requirement refs: `REQ-003`
+  Task refs: `TASK-007`
+  Test level: manual + integration
+  Preconditions:
+  - App is reachable over Tailnet
+  - Real iPhone browser, Chrome or Safari, is available
+  - Production has `OPENCLAW_BIN`, `OPENCLAW_GATEWAY_TOKEN`, and local OpenClaw sync mode configured
+  Steps:
+  1. Open `/mobile`
+  2. Send a short command from the command bar or chat sheet
+  3. Refresh the mobile page
+  Expected result:
+  - Assistant response appears inline and remains in conversation history after refresh
+  Execution status: passed in production on `2026-05-02`
+  Notes:
+  - This validates the direct `/api/mobile/chat` path. It should not be replaced by queued-only launch behavior unless a queue worker is intentionally added and validated.

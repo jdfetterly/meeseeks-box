@@ -46,7 +46,7 @@ Turn Meeseek Box into a clearer intent-to-outcome product by making Assistant th
 
 ## Traceability
 
-- Functional spec: `/Users/jdfetterly/Documents/projects-folder/meeseeks-box/planning/chat-briefs/meeseek-box-functional-spec-rev-a.md`
+- Functional spec: `../../../../chat-briefs/meeseek-box-functional-spec-rev-a.md`
 - Requirements index: `requirements/index.md`
 - FDD: `fdd.md`
 - TDD: `tdd/index.md`
