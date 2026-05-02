@@ -85,12 +85,40 @@ npm run build
 PLIST_SOURCE="$REPO_PATH/ops/launchd/${SERVICE_LABEL}.plist.example"
 PLIST_DEST="$HOME/Library/LaunchAgents/${SERVICE_LABEL}.plist"
 LAUNCHCTL_TARGET="gui/$(id -u)/$SERVICE_LABEL"
+HEALTHCHECK_HOSTPORT="${HEALTHCHECK_URL#*://}"
+HEALTHCHECK_HOSTPORT="${HEALTHCHECK_HOSTPORT%%/*}"
+HEALTHCHECK_PORT="${HEALTHCHECK_HOSTPORT##*:}"
+
+stop_port_listeners() {
+  if [[ ! "$HEALTHCHECK_PORT" =~ ^[0-9]+$ ]]; then
+    return
+  fi
+
+  local listeners
+  listeners="$(lsof -tiTCP:"$HEALTHCHECK_PORT" -sTCP:LISTEN 2>/dev/null || true)"
+  if [[ -z "$listeners" ]]; then
+    return
+  fi
+
+  echo "==> Stopping existing listeners on port $HEALTHCHECK_PORT"
+  kill $listeners 2>/dev/null || true
+  sleep 2
+
+  listeners="$(lsof -tiTCP:"$HEALTHCHECK_PORT" -sTCP:LISTEN 2>/dev/null || true)"
+  if [[ -n "$listeners" ]]; then
+    echo "==> Forcing listener shutdown on port $HEALTHCHECK_PORT"
+    kill -9 $listeners 2>/dev/null || true
+    sleep 1
+  fi
+}
 
 if [[ -f "$PLIST_SOURCE" ]]; then
   echo "==> Refreshing launchd plist"
   mkdir -p "$HOME/Library/LaunchAgents"
   cp "$PLIST_SOURCE" "$PLIST_DEST"
 fi
+
+stop_port_listeners
 
 if launchctl print "$LAUNCHCTL_TARGET" >/dev/null 2>&1; then
   echo "==> Restarting launchd service"
