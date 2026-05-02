@@ -1,13 +1,15 @@
-# Meeseeks Box Main Screens
+# Archived Meeseeks Box Main Screens
 
 This document identifies the primary top-level screens currently used in the product shell and provides screenshots plus usage notes for downstream UI design work.
 
 Status note:
 
+- Archived on 2026-05-02.
 - This is a dated March 2026 audit of the desktop/responsive product shell.
-- It is still useful for desktop-shell reference because the desktop app may remain a valid future surface.
-- It is not the current mobile source of truth. Current production mobile is the black/green `/mobile` shell implemented in `app/mobile/page.tsx` and `components/mobile/*`.
-- Do not use the mobile screenshots in this audit to validate or recreate the current iPhone experience.
+- It is preserved for historical desktop-shell evidence because the desktop app may remain a valid future surface.
+- It is not active implementation, QA, or current mobile design guidance.
+- Current production mobile is the black/green `/mobile` shell implemented in `app/mobile/page.tsx` and `components/mobile/*`.
+- Do not use the mobile screenshots in this archive to validate or recreate the current iPhone experience.
 
 Capture context:
 
