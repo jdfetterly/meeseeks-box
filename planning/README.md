@@ -24,6 +24,7 @@ planning/
   project.md
   ai-first-north-star.md
   ai-first-reality-framework.md
+  archive/
   _workflow/
   _templates/
   initiatives/
@@ -37,3 +38,5 @@ Until formal FDD and TDD artifacts are fully backfilled, the files in this tree 
 
 - `ai-first-north-star.md` defines the product north star and design test.
 - `ai-first-reality-framework.md` translates that north star into product consequences and design guidance.
+- `chat-briefs/meeseek-box-functional-spec-rev-a.md` is the active Rev-A product contract.
+- `archive/` preserves historical planning inputs that should not be treated as active implementation instructions.

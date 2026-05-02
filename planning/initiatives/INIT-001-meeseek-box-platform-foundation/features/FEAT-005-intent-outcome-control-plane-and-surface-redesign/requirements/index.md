@@ -7,9 +7,9 @@
 - Status: `draft`
 - Last Updated: `2026-03-26`
 - Source Inputs:
-  - `/Users/jdfetterly/Documents/projects-folder/meeseeks-box/planning/chat-briefs/meeseek-box-functional-spec-rev-a.md`
-  - `/Users/jdfetterly/Documents/projects-folder/meeseeks-box/planning/chat-briefs/redesign-rider-feedback.md`
-  - `/Users/jdfetterly/Documents/projects-folder/meeseeks-box/planning/chat-briefs/redesign-rider-gap-closure-guidance.md`
+  - `../../../../../chat-briefs/meeseek-box-functional-spec-rev-a.md`
+  - `../../../../../chat-briefs/redesign-rider-feedback.md`
+  - `../../../../../chat-briefs/redesign-rider-gap-closure-guidance.md`
 
 ## Requirements
 

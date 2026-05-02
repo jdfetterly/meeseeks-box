@@ -5,7 +5,7 @@
 **Author:** Design lead (functional spec owner)
 **Purpose:** Revised decision-complete functional specification for the intent-to-outcome redesign. This revision preserves the original structure while incorporating review findings and clarified interaction rules.
 **Scope:** v1 unless marked `[v1.1]`
-**Supersedes:** This document becomes the active product contract. [meeseek-box-functional-spec.md](/Users/jdfetterly/Documents/projects-folder/meeseeks-box/planning/chat-briefs/meeseek-box-functional-spec.md) remains preserved as historical reference.
+**Supersedes:** This document becomes the active product contract. [meeseek-box-functional-spec.md](../archive/chat-briefs/meeseek-box-functional-spec.md) remains preserved as historical reference.
 
 ---
 

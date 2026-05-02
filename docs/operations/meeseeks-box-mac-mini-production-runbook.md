@@ -6,7 +6,7 @@ This runbook defines the branch, review, merge, and deploy path for Meeseeks Box
 
 It is an app-specific overlay on:
 
-- [mini-shared-policy.md](/Users/jdfetterly/Ops/meeseeks-box-main/docs/operations/mini-shared-policy.md)
+- [mini-shared-policy.md](mini-shared-policy.md)
 - [external-agent-plane-framework.md](/Users/jdfetterly/Ops/iron-claw-mini/security-model/external-agent-plane-framework.md)
 
 ## Host And Paths
@@ -111,6 +111,25 @@ MEESEEKS_BOX_OPENCLAW_SYNC_MODE=local
 MEESEEKS_BOX_RUNTIME_SCHEDULE_SYNC_ENABLED=true
 ```
 
+## Mobile Chat Runtime
+
+The `/mobile` command bar and chat sheet are direct-response surfaces for the mini operator loop.
+
+Current production path:
+
+1. the browser posts to `POST /api/mobile/chat`
+2. the API persists the user message in product-state conversations
+3. the API calls OpenClaw through the server-side gateway token using the selected agent context, currently `mini-ops`
+4. the API persists the assistant response and returns the refreshed message list
+
+This is intentionally separate from `POST /api/product-state/launch`. The launch route remains the canonical work/run creation contract, but it does not provide live mobile chat responses unless a queue worker is running. Do not route the mobile command bar back through queued launch behavior when the desired user experience is an immediate OpenClaw answer.
+
+Required runtime values for direct mobile chat:
+
+- `OPENCLAW_BIN`
+- `OPENCLAW_GATEWAY_TOKEN`
+- `MEESEEKS_BOX_OPENCLAW_SYNC_MODE=local`
+
 ## GitHub Variables And Secrets
 
 Governance variables:
@@ -204,7 +223,7 @@ Bootstrap note:
 
 Use the template at:
 
-- [com.jd.meeseeks-box.plist.example](/Users/jdfetterly/Ops/meeseeks-box-main/ops/launchd/com.jd.meeseeks-box.plist.example)
+- [com.jd.meeseeks-box.plist.example](../../ops/launchd/com.jd.meeseeks-box.plist.example)
 
 Install on the mini by copying and editing paths:
 
@@ -227,23 +246,25 @@ Recommended runner labels:
 - `macOS`
 - `meeseeks-box-mini-deploy`
 
-The runner should be registered to the repository, not globally, and should be used only by [deploy-mac-mini.yml](/Users/jdfetterly/Ops/meeseeks-box-main/.github/workflows/deploy-mac-mini.yml).
+The runner should be registered to the repository, not globally, and should be used only by [deploy-mac-mini.yml](../../.github/workflows/deploy-mac-mini.yml).
 
 ## Deploy Script
 
 The mini deploy script lives at:
 
-- [deploy-mini.sh](/Users/jdfetterly/Ops/meeseeks-box-main/scripts/deploy-mini.sh)
+- [deploy-mini.sh](../../scripts/deploy-mini.sh)
 
 Its job is:
 
 1. fetch and fast-forward `main`
 2. run `npm ci`
 3. run `npm run build`
-4. refresh or install the `launchd` plist if needed
-5. restart or bootstrap the `launchd` service
-6. hit the healthcheck URL
-7. run the optional post-deploy validation hook
+4. refresh or install the `launchd` plist from the checked-in template
+5. unload the existing `launchd` service if it is loaded
+6. stop any stale listener still bound to the healthcheck port
+7. bootstrap the refreshed `launchd` service
+8. hit the healthcheck URL
+9. run the optional post-deploy validation hook
 
 ## Current Deploy Validation
 
@@ -257,6 +278,16 @@ The current production safety floor is deterministic and non-agent:
 Current production URL:
 
 - [https://jds-mac-mini.tail13d577.ts.net/](https://jds-mac-mini.tail13d577.ts.net/)
+- [https://jds-mac-mini.tail13d577.ts.net/mobile](https://jds-mac-mini.tail13d577.ts.net/mobile)
+
+Tailnet Serve proxies the HTTPS origin to the loopback Next.js process on the mini.
+
+Manual mobile chat smoke after a deploy:
+
+1. open `/mobile` from a real iPhone browser, Chrome or Safari
+2. send a short message to the selected project or General Chat
+3. confirm an assistant response appears without a `Launch agentId is required` toast
+4. refresh and confirm the conversation history still includes the response
 
 The deploy script may run a repo-local `scripts/post-deploy-validate.sh` hook if one exists, but the intended steady state right now is that no OpenClaw validation hook is installed yet.
 
@@ -270,7 +301,7 @@ The OpenClaw post-deploy validator is intentionally deferred until the app contr
 
 Future-phase contract:
 
-- [post-deploy-validation-skill.md](/Users/jdfetterly/Ops/meeseeks-box-main/docs/operations/post-deploy-validation-skill.md)
+- [post-deploy-validation-skill.md](post-deploy-validation-skill.md)
 
 Readiness gate before enabling it:
 

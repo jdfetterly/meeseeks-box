@@ -1,5 +1,9 @@
 # Meeseek Box Dedicated Chat Briefs
 
+Status: historical prompt pack plus active Rev-A source inputs.
+
+The active product contract is `meeseek-box-functional-spec-rev-a.md`. The original functional spec has moved to `../archive/chat-briefs/meeseek-box-functional-spec.md` as historical reference.
+
 These markdown files are designed to be dragged into separate chats. Each file is standalone and includes:
 
 - the product context the agent needs
