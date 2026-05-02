@@ -13,7 +13,7 @@ Your job is not to summarize the files mechanically. Your job is to:
 
 Read these files first:
 
-- /Users/jdfetterly/Documents/projects-folder/meeseeks-box/docs/ui-screen-audit/main-screens.md
+- docs/archive/ui-screen-audit/main-screens.md
 - /Users/jdfetterly/Documents/projects-folder/meeseeks-box/planning/ai-first-north-star.md
 - planning/chat-briefs/06-board-page.md
 - /Users/jdfetterly/Documents/projects-folder/meeseeks-box/planning/cline-kanban-findings.md

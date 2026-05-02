@@ -43,3 +43,6 @@ next-env.d.ts
 
 # research
 /research/
+
+# retired local split app; canonical mobile lives in app/mobile and components/mobile
+/meeseeks-mobile/

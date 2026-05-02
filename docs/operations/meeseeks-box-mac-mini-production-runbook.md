@@ -115,6 +115,13 @@ MEESEEKS_BOX_RUNTIME_SCHEDULE_SYNC_ENABLED=true
 
 The `/mobile` command bar and chat sheet are direct-response surfaces for the mini operator loop.
 
+Canonical mobile UI contract:
+
+1. the only supported mobile product surface is the parent-repo `/mobile` route
+2. the mobile shell should use the black/green command/jobs/context experience from `components/mobile/*`
+3. the retired standalone split at `/Users/jdfetterly/Products/meeseeks-box/meeseeks-mobile` must not be used for production, screenshots, QA, or local acceptance
+4. old light chat-home screens with copy such as `Pick up the thread`, `Start a chat`, or `Open a new chat with OpenClaw` are historical and should be removed or replaced if rediscovered
+
 Current production path:
 
 1. the browser posts to `POST /api/mobile/chat`
