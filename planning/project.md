@@ -4,12 +4,14 @@
 - Project ID: `PROJ-001`
 - Project Name: `Meeseek Box`
 - Status: `active`
-- Last Updated: `2026-03-19`
+- Last Updated: `2026-05-02`
 - Owner: `JD`
 
 ## Purpose
 
 Meeseek Box is the operator-facing command center for JD's Mac mini OpenClaw runtime. The project aims to provide a shared responsive shell, discovery-backed runtime integration, cross-device state, a Kanban-first work model, governed memory/artifact handling, and safe runtime-aware approvals while preserving the `iron-claw-mini` security posture.
+
+Current mobile note: the production phone surface is the black/green parent-repo `/mobile` route, backed by `app/mobile/page.tsx` and `components/mobile/*`. The retired standalone `meeseeks-mobile` split is historical and should not guide current mobile implementation.
 
 ## Scope Summary
 
@@ -64,6 +66,7 @@ Meeseek Box is the operator-facing command center for JD's Mac mini OpenClaw run
 - OpenClaw remains the execution substrate
 - The adapter boundary is the least stable interface and must be treated as a primary testing target
 - Mobile UI coverage must stay right-sized and focus on golden-path flows
+- Mobile QA must distinguish the current `/mobile` command shell from older responsive-shell or split-app screenshots
 - Real OpenClaw and Claw-Tower discovery must happen before implementation decisions harden around events, approvals, schedules, and workspace paths
 
 ## Key Links

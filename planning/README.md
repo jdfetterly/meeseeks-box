@@ -46,3 +46,5 @@ Until formal FDD and TDD artifacts are fully backfilled, the files in this tree 
 The standalone `/Users/jdfetterly/Products/meeseeks-box/meeseeks-mobile` app is retired. It was an exploratory split and is not the active mobile product surface.
 
 The canonical mobile implementation is the parent-repo `/mobile` route backed by `app/mobile/page.tsx` and `components/mobile/*`. Do not use the old split app or its light chat UI for design validation, screenshots, QA, or implementation guidance.
+
+The desktop shell remains a possible future surface. Retiring the split mobile folder does not retire the parent repo's desktop routes; it only prevents the old standalone mobile experiment from being mistaken for the current phone UI.

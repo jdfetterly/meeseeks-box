@@ -53,6 +53,7 @@ Build the redesign from the inside out. First land the active-work model and unf
 
 - The active Assistant session may need a dedicated server-backed model rather than piggybacking entirely on existing chat-thread state if current client assumptions are too thread-centric.
 - Existing Home and Chat route naming may create temporary confusion during rollout; shell copy cutover should be treated as part of the product contract, not post-hoc cleanup.
+- The current production phone surface is the dedicated black/green `/mobile` command shell, not the older responsive-shell mobile UI or retired standalone `meeseeks-mobile` split. Future mobile Assistant work should either build on that shell or explicitly replace it through a new approved design decision.
 
 ## 7. Current Execution Notes
 

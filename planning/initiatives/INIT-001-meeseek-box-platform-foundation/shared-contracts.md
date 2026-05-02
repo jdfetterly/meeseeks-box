@@ -4,7 +4,7 @@
 - Project: `PROJ-001 Meeseek Box`
 - Initiative ID: `INIT-001`
 - Status: `draft`
-- Last Updated: `2026-03-20`
+- Last Updated: `2026-05-02`
 
 ## `AppShellContract`
 
@@ -13,9 +13,14 @@ Defines the shared responsive web shell used by all feature surfaces.
 Fields / behavior:
 - primary routes for `Home`, `Work`, `Chat`, `Inbox`, and `More`
 - desktop sidebar + activity rail behavior
-- mobile bottom navigation behavior
+- historical responsive-shell mobile bottom navigation behavior
 - universal drawer/sheet entry contract for cross-entity drilldowns
 - linked navigation behavior for conversation, work item, run, artifact, memory, schedule, and agent references
+
+Current production exception:
+- `/mobile` is a dedicated phone-first command shell with `command`, `jobs`, and `context` tabs.
+- The `/mobile` shell is canonical for current iPhone QA and is implemented in `app/mobile/page.tsx` plus `components/mobile/*`.
+- The older responsive-shell mobile behavior remains useful historical context for desktop-shell planning, but it is not the current mobile acceptance target.
 
 ## `ViewportProfile`
 
@@ -26,7 +31,7 @@ Shared test and layout profiles for v1.
 
 Policy:
 - Playwright must use these shared profiles rather than ad hoc dimensions
-- real iPhone Safari over Tailnet remains a required manual validation surface
+- real iPhone browser validation over Tailnet, Chrome or Safari, remains a required manual validation surface
 
 ## `OpenClawIntegrationAdapter`
 

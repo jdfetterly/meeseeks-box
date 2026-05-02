@@ -2,6 +2,13 @@
 
 This document identifies the primary top-level screens currently used in the product shell and provides screenshots plus usage notes for downstream UI design work.
 
+Status note:
+
+- This is a dated March 2026 audit of the desktop/responsive product shell.
+- It is still useful for desktop-shell reference because the desktop app may remain a valid future surface.
+- It is not the current mobile source of truth. Current production mobile is the black/green `/mobile` shell implemented in `app/mobile/page.tsx` and `components/mobile/*`.
+- Do not use the mobile screenshots in this audit to validate or recreate the current iPhone experience.
+
 Capture context:
 
 - App captured from `http://127.0.0.1:3001/` on March 22, 2026.
@@ -10,10 +17,11 @@ Capture context:
 
 ## Shared Shell Patterns
 
-The app uses the same route set on laptop and mobile rather than separate device-specific screens.
+At the time of capture, the app used the same route set on laptop and mobile rather than separate device-specific screens. That is no longer the full mobile truth.
 
 - Desktop pattern: persistent left sidebar with branding, search, primary nav, and settings/operator footer.
 - Mobile pattern: fixed top header with page title plus search/more controls, and a fixed bottom nav with `Home`, `Work`, `Chat`, `Inbox`, and `More`.
+- Current mobile exception: the supported phone-first route is `/mobile`, with `command`, `jobs`, and `context` tabs and direct `/api/mobile/chat` responses.
 - Information architecture pattern: the first four screens are operational entry points; the rest are supporting system surfaces.
 - Interaction pattern: most list items drill into canonical objects such as work items, schedules, runs, conversations, or artifact families.
 - Important nuance: in the captured headless-Chrome desktop screenshots, the mobile bottom bar also appears at the bottom of wide layouts. Treat that as a current implementation detail to validate, not an intentional design requirement.
@@ -232,7 +240,7 @@ Mobile:
 - `Work`, `Chat`, and `Inbox` are the core action loop.
 - `Home` is summary/triage, not the place where actions are primarily completed.
 - `Schedules`, `Artifacts`, and `Memory` are specialized system-management surfaces with more registry semantics than consumer-app semantics.
-- Mobile uses the same information model, but long-form operational work still appears biased toward larger screens.
+- The desktop/responsive shell uses the same information model across viewport sizes, but the current production iPhone surface is a dedicated `/mobile` command shell.
 - The UI language consistently emphasizes operational clarity over decorative interface patterns.
 
 ## Recommended Starting Point For UI Redesign Work
@@ -246,3 +254,5 @@ If another model needs a fast starting point, prioritize these screens in this o
 5. `Schedules`
 
 Those five together describe the core operating model of the product.
+
+For current mobile redesign or QA work, start from `/mobile` and the Mac mini production runbook instead of these March 2026 mobile screenshots.
