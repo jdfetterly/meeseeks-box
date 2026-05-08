@@ -94,7 +94,7 @@ export async function POST(
   try {
     const openai = getOpenClawClient()
     const stream = await openai.chat.completions.create({
-      model: 'claude-sonnet-4-6',
+      model: process.env.OPENCLAW_CHAT_MODEL || 'openclaw/default',
       stream: true,
       messages: [
         { role: 'system' as const, content: systemPrompt },
